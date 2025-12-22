@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /config.js
+Disallow: /*.js$
+
+Sitemap: https://blockchain-evidence.vercel.app/sitemap.xml

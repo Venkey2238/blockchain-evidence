@@ -93,25 +93,59 @@
         <!-- Evidence Tab -->
         <div id="evidence" class="tab-content">
             <div class="flex justify-between items-center mb-6">
-                <h2>Publicly Released Evidence</h2>
-                <div class="flex gap-4">
-                    <select id="evidenceCategory" class="form-select" style="width: 200px;">
-                        <option value="">All Categories</option>
-                        <option value="Physical">Physical</option>
-                        <option value="Digital">Digital</option>
-                        <option value="Document">Document</option>
-                        <option value="Photo">Photo</option>
-                        <option value="Video">Video</option>
-                        <option value="Audio">Audio</option>
-                    </select>
-                    <input type="text" id="evidenceFilter" class="form-input" placeholder="Filter evidence..." style="width: 300px;">
-                    <button id="refreshEvidence" class="btn btn-outline">🔄 Refresh</button>
-                </div>
+                <h2>Evidence Management</h2>
+                <button class="btn btn-primary" onclick="showEvidenceForm()">📁 Submit Evidence</button>
             </div>
-            <div id="evidenceContainer" class="grid gap-4">
+            
+            <!-- Evidence Submission Form -->
+            <div id="evidenceFormContainer" class="card hidden">
+                <h3>Submit New Evidence</h3>
+                <form id="evidenceForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="caseId">Case ID</label>
+                            <input type="text" id="caseId" name="caseId" class="form-control" placeholder="Enter case ID" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="title">Evidence Title</label>
+                            <input type="text" id="title" name="title" class="form-control" placeholder="Enter evidence title" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" class="form-control" placeholder="Describe the evidence" required></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="type">Evidence Type</label>
+                            <select id="type" name="type" class="form-control" required>
+                                <option value="">Select type</option>
+                                <option value="Physical">Physical Evidence</option>
+                                <option value="Digital">Digital Evidence</option>
+                                <option value="Document">Document</option>
+                                <option value="Photo">Photograph</option>
+                                <option value="Video">Video</option>
+                                <option value="Audio">Audio</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="evidenceFile">Upload File</label>
+                            <input type="file" id="evidenceFile" class="form-control" required>
+                        </div>
+                    </div>
+                    <div id="fileInfo" class="mb-4"></div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-success">Submit Evidence</button>
+                        <button type="button" class="btn btn-outline" onclick="hideEvidenceForm()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Evidence List -->
+            <div id="evidenceList" class="mt-6">
                 <div class="text-center p-8">
                     <div class="loading mb-4"></div>
-                    <p>Loading public evidence...</p>
+                    <p>Loading evidence...</p>
                 </div>
             </div>
         </div>
@@ -221,6 +255,8 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+    <script src="firebase-storage.js"></script>
+    <script src="evidence-manager.js"></script>
     <script src="config.js"></script>
     <script src="dashboard-public-viewer.js"></script>
     <script>
@@ -278,6 +314,15 @@
                 });
             });
         });
+        
+        // Evidence form functions
+        function showEvidenceForm() {
+            document.getElementById('evidenceFormContainer').classList.remove('hidden');
+        }
+        
+        function hideEvidenceForm() {
+            document.getElementById('evidenceFormContainer').classList.add('hidden');
+        }
     </script>
 </body>
 </html>

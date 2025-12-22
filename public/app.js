@@ -1,4 +1,4 @@
-// Modern Evidence Management System
+// Modern Evidence Management System - Optimized
 let web3, userAccount;
 
 const roleNames = {
@@ -14,27 +14,30 @@ const roleDashboards = {
     7: 'dashboard-public-viewer.html', 8: 'dashboard-public-viewer.html'
 };
 
-// Debug function
-function debugInfo() {
-    console.log('Debug Info:');
-    console.log('userAccount:', userAccount);
-    console.log('localStorage key:', 'evidUser_' + userAccount);
-    console.log('saved user:', localStorage.getItem('evidUser_' + userAccount));
-}
-
-document.addEventListener('DOMContentLoaded', function() {
+// Optimized DOM ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
     initializeApp();
-});
+}
 
 async function initializeApp() {
     try {
-        document.getElementById('connectWallet').addEventListener('click', connectWallet);
-        document.getElementById('registrationForm').addEventListener('submit', handleRegistration);
-        document.getElementById('goToDashboard').addEventListener('click', goToDashboard);
+        // Cache DOM elements
+        const connectBtn = document.getElementById('connectWallet');
+        const regForm = document.getElementById('registrationForm');
+        const dashBtn = document.getElementById('goToDashboard');
+        
+        if (connectBtn) connectBtn.addEventListener('click', connectWallet);
+        if (regForm) regForm.addEventListener('submit', handleRegistration);
+        if (dashBtn) dashBtn.addEventListener('click', goToDashboard);
 
-        const accounts = await window.ethereum?.request({ method: 'eth_accounts' }) || [];
-        if (accounts.length > 0) {
-            await connectWallet();
+        // Check for existing connection
+        if (window.ethereum) {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' }).catch(() => []);
+            if (accounts.length > 0) {
+                await connectWallet();
+            }
         }
     } catch (error) {
         console.error('App initialization error:', error);
@@ -47,10 +50,7 @@ async function connectWallet() {
         
         if (config.DEMO_MODE) {
             userAccount = '0x1234567890123456789012345678901234567890';
-            document.getElementById('walletAddress').textContent = userAccount;
-            document.getElementById('walletStatus').classList.remove('hidden');
-            document.getElementById('connectWallet').textContent = 'Connected (Demo)';
-            document.getElementById('connectWallet').disabled = true;
+            updateWalletUI();
             await checkRegistrationStatus();
             showLoading(false);
             return;
@@ -71,18 +71,26 @@ async function connectWallet() {
         
         userAccount = accounts[0];
         web3 = new Web3(window.ethereum);
-
-        document.getElementById('walletAddress').textContent = userAccount;
-        document.getElementById('walletStatus').classList.remove('hidden');
-        document.getElementById('connectWallet').textContent = 'Connected';
-        document.getElementById('connectWallet').disabled = true;
-
+        updateWalletUI();
         await checkRegistrationStatus();
         showLoading(false);
     } catch (error) {
         showLoading(false);
         console.error('Wallet connection error:', error);
         showAlert('Failed to connect wallet: ' + error.message, 'error');
+    }
+}
+
+function updateWalletUI() {
+    const walletAddr = document.getElementById('walletAddress');
+    const walletStatus = document.getElementById('walletStatus');
+    const connectBtn = document.getElementById('connectWallet');
+    
+    if (walletAddr) walletAddr.textContent = userAccount;
+    if (walletStatus) walletStatus.classList.remove('hidden');
+    if (connectBtn) {
+        connectBtn.textContent = config.DEMO_MODE ? 'Connected (Demo)' : 'Connected';
+        connectBtn.disabled = true;
     }
 }
 
@@ -93,28 +101,63 @@ async function checkRegistrationStatus() {
             return;
         }
         
-        const savedUser = localStorage.getItem('evidUser_' + userAccount);
+        // Check IndexedDB first, then localStorage as fallback
+        let userInfo = await storage.getUser(userAccount);
         
-        if (savedUser) {
-            const userInfo = JSON.parse(savedUser);
-            document.getElementById('userName').textContent = userInfo.fullName;
-            document.getElementById('userRoleName').textContent = roleNames[userInfo.role];
-            document.getElementById('userRoleName').className = `badge badge-${getRoleClass(userInfo.role)}`;
-            document.getElementById('userDepartment').textContent = userInfo.department || 'Public';
-            
-            document.getElementById('walletSection').classList.add('hidden');
-            document.getElementById('alreadyRegisteredSection').classList.remove('hidden');
+        if (!userInfo) {
+            // Fallback to localStorage
+            const savedUser = localStorage.getItem('evidUser_' + userAccount);
+            if (savedUser) {
+                userInfo = JSON.parse(savedUser);
+                // Migrate to IndexedDB
+                userInfo.walletAddress = userAccount;
+                await storage.saveUser(userInfo);
+            }
+        }
+        
+        if (userInfo) {
+            updateUserUI(userInfo);
+            toggleSections('alreadyRegistered');
+            // Log login activity
+            await storage.logActivity(userAccount, 'USER_LOGIN', 'User logged in');
             return;
         }
         
-        document.getElementById('walletSection').classList.add('hidden');
-        document.getElementById('registrationSection').classList.remove('hidden');
+        toggleSections('registration');
     } catch (error) {
         console.error('Registration check error:', error);
         showAlert('Error checking registration: ' + error.message, 'error');
-        document.getElementById('walletSection').classList.add('hidden');
-        document.getElementById('registrationSection').classList.remove('hidden');
+        toggleSections('registration');
     }
+}
+
+function updateUserUI(userInfo) {
+    const elements = {
+        userName: document.getElementById('userName'),
+        userRoleName: document.getElementById('userRoleName'),
+        userDepartment: document.getElementById('userDepartment')
+    };
+    
+    if (elements.userName) elements.userName.textContent = userInfo.fullName;
+    if (elements.userRoleName) {
+        elements.userRoleName.textContent = roleNames[userInfo.role];
+        elements.userRoleName.className = `badge badge-${getRoleClass(userInfo.role)}`;
+    }
+    if (elements.userDepartment) elements.userDepartment.textContent = userInfo.department || 'Public';
+}
+
+function toggleSections(activeSection) {
+    const sections = {
+        wallet: document.getElementById('walletSection'),
+        registration: document.getElementById('registrationSection'),
+        alreadyRegistered: document.getElementById('alreadyRegisteredSection')
+    };
+    
+    Object.keys(sections).forEach(key => {
+        if (sections[key]) {
+            sections[key].classList.toggle('hidden', key !== activeSection);
+        }
+    });
 }
 
 async function handleRegistration(event) {
@@ -129,33 +172,24 @@ async function handleRegistration(event) {
             return;
         }
         
-        const fullName = document.getElementById('fullName').value;
-        const role = parseInt(document.getElementById('userRole').value);
-        
-        if (!fullName || !role) {
-            showAlert('Please fill in all required fields and select a role.', 'error');
+        const formData = getFormData();
+        if (!formData) {
             showLoading(false);
             return;
         }
         
-        const userData = {
-            fullName: fullName,
-            role: role,
-            department: role === 1 ? 'Public' : document.getElementById('department').value,
-            badgeNumber: role === 1 ? '' : document.getElementById('badgeNumber').value,
-            jurisdiction: role === 1 ? 'Public' : document.getElementById('jurisdiction').value,
-            registrationDate: Date.now(),
-            isRegistered: true,
-            isActive: true
-        };
+        // Save to localStorage (backward compatibility)
+        localStorage.setItem('evidUser_' + userAccount, JSON.stringify(formData));
         
-        localStorage.setItem('evidUser_' + userAccount, JSON.stringify(userData));
+        // Save to IndexedDB for persistent storage
+        formData.walletAddress = userAccount;
+        await storage.saveUser(formData);
         
         showLoading(false);
         showAlert('Registration successful! Redirecting to dashboard...', 'success');
         
         setTimeout(() => {
-            const dashboardUrl = roleDashboards[role] || 'dashboard-public-viewer.html';
+            const dashboardUrl = roleDashboards[formData.role] || 'dashboard-public-viewer.html';
             window.location.href = dashboardUrl;
         }, 2000);
         
@@ -166,18 +200,34 @@ async function handleRegistration(event) {
     }
 }
 
+function getFormData() {
+    const fullName = document.getElementById('fullName')?.value;
+    const role = parseInt(document.getElementById('userRole')?.value);
+    
+    if (!fullName || !role) {
+        showAlert('Please fill in all required fields and select a role.', 'error');
+        return null;
+    }
+    
+    return {
+        fullName,
+        role,
+        department: role === 1 ? 'Public' : document.getElementById('department')?.value,
+        badgeNumber: role === 1 ? '' : document.getElementById('badgeNumber')?.value,
+        jurisdiction: role === 1 ? 'Public' : document.getElementById('jurisdiction')?.value,
+        registrationDate: Date.now(),
+        isRegistered: true,
+        isActive: true
+    };
+}
+
 async function goToDashboard() {
     try {
         const savedUser = localStorage.getItem('evidUser_' + userAccount);
         if (savedUser) {
             const userInfo = JSON.parse(savedUser);
-            const dashboardUrl = roleDashboards[userInfo.role];
-            if (dashboardUrl) {
-                window.location.href = dashboardUrl;
-            } else {
-                showAlert('Dashboard not available for your role yet. Using default dashboard.', 'info');
-                window.location.href = 'dashboard-public-viewer.html';
-            }
+            const dashboardUrl = roleDashboards[userInfo.role] || 'dashboard-public-viewer.html';
+            window.location.href = dashboardUrl;
         } else {
             showAlert('User data not found. Please register again.', 'error');
         }
@@ -197,34 +247,26 @@ function getRoleClass(role) {
 
 function showLoading(show) {
     const modal = document.getElementById('loadingModal');
-    if (show) {
-        modal.classList.add('active');
-    } else {
-        modal.classList.remove('active');
-    }
+    if (modal) modal.classList.toggle('active', show);
 }
 
 function showAlert(message, type) {
-    const existingAlerts = document.querySelectorAll('.alert');
-    existingAlerts.forEach(alert => alert.remove());
+    // Remove existing alerts
+    document.querySelectorAll('.alert').forEach(alert => alert.remove());
     
     const alert = document.createElement('div');
     alert.className = `alert alert-${type}`;
     alert.innerHTML = message;
     
     const container = document.querySelector('.container');
-    container.insertBefore(alert, container.firstChild);
-    
-    setTimeout(() => {
-        alert.remove();
-    }, 5000);
+    if (container) {
+        container.insertBefore(alert, container.firstChild);
+        setTimeout(() => alert.remove(), 5000);
+    }
 }
 
+// Ethereum event listeners
 if (window.ethereum) {
-    window.ethereum.on('accountsChanged', function (accounts) {
-        location.reload();
-    });
-    window.ethereum.on('chainChanged', function (chainId) {
-        location.reload();
-    });
+    window.ethereum.on('accountsChanged', () => location.reload());
+    window.ethereum.on('chainChanged', () => location.reload());
 }

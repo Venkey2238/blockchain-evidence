@@ -3,10 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔐 Evid-DGC | Blockchain Evidence Management</title>
+    <title>🔐 Evid-DGC | Secure Blockchain Evidence Management System</title>
+    <meta name="description" content="Secure blockchain-based evidence management system with MetaMask integration, IPFS storage, and 8 user roles for law enforcement and legal professionals.">
+    <link rel="canonical" href="https://blockchain-evidence.vercel.app">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="🔐 Evid-DGC | Secure Blockchain Evidence Management System">
+    <meta property="og:description" content="Secure blockchain-based evidence management system with MetaMask integration, IPFS storage, and 8 user roles for law enforcement and legal professionals.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://blockchain-evidence.vercel.app">
+    <meta property="og:site_name" content="Evid-DGC">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="🔐 Evid-DGC | Secure Blockchain Evidence Management System">
+    <meta name="twitter:description" content="Secure blockchain-based evidence management system with MetaMask integration, IPFS storage, and 8 user roles for law enforcement and legal professionals.">
+    
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Evid-DGC",
+      "description": "Secure blockchain-based evidence management system with MetaMask integration, IPFS storage, and 8 user roles for law enforcement and legal professionals.",
+      "url": "https://blockchain-evidence.vercel.app",
+      "applicationCategory": "SecurityApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "creator": {
+        "@type": "Organization",
+        "name": "Evid-DGC"
+      }
+    }
+    </script>
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+    
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+    <script src="firebase-storage.js"></script>
+    <script src="evidence-manager.js"></script>
 </head>
 <body>
     <!-- Floating Particles Background -->
@@ -21,6 +69,32 @@
                 <span class="highlight">🔒 Secure</span> • 
                 <span class="highlight">🌐 Decentralized</span> • 
                 <span class="highlight">⚡ Transparent</span>
+            </div>
+        </div>
+
+        <!-- About Section -->
+        <div class="about-section card">
+            <div class="card-header">
+                <h2>🎯 About Evid-DGC</h2>
+            </div>
+            <div class="card-body">
+                <p>Evid-DGC is a revolutionary blockchain-based evidence management system designed for law enforcement agencies, legal professionals, and forensic analysts. Our secure platform leverages blockchain technology to ensure evidence integrity, transparency, and immutable record-keeping throughout the entire evidence lifecycle.</p>
+                
+                <h3>🔑 Key Benefits</h3>
+                <ul>
+                    <li><strong>Immutable Evidence Storage:</strong> All evidence is stored on the blockchain, ensuring it cannot be tampered with or altered</li>
+                    <li><strong>Decentralized IPFS Storage:</strong> Files are distributed across multiple nodes for maximum security and availability</li>
+                    <li><strong>Role-Based Access Control:</strong> Eight distinct user roles ensure proper authorization and accountability</li>
+                    <li><strong>Complete Audit Trail:</strong> Every action is recorded on the blockchain for full transparency</li>
+                    <li><strong>MetaMask Integration:</strong> Secure wallet-based authentication for enhanced security</li>
+                    <li><strong>Real-time Collaboration:</strong> Multiple stakeholders can work together while maintaining evidence integrity</li>
+                </ul>
+                
+                <h3>🎯 Use Cases</h3>
+                <p>Our system is designed for various scenarios including criminal investigations, civil litigation, corporate compliance, forensic analysis, and regulatory audits. Whether you're a police investigator collecting digital evidence, a forensic analyst processing data, or a legal professional preparing for court, Evid-DGC provides the tools and security you need.</p>
+                
+                <h3>🔒 Security & Compliance</h3>
+                <p>Built with enterprise-grade security standards, our platform ensures compliance with legal requirements for evidence handling. All data is encrypted, access is logged, and the blockchain provides an immutable chain of custody that meets the highest standards for legal admissibility.</p>
             </div>
         </div>
 

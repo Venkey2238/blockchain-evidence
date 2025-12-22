@@ -1,0 +1,38 @@
+# Evid-DGC - Blockchain Evidence Management System
+
+## Overview
+Evid-DGC is a secure blockchain-based evidence management system designed for law enforcement, legal professionals, and forensic analysts. The platform ensures evidence integrity through immutable blockchain storage and decentralized IPFS file storage.
+
+## Key Features
+- Blockchain Security: Immutable evidence storage with cryptographic verification
+- IPFS Storage: Decentralized file storage for evidence and documents
+- Role-Based Access: 8 different user roles with specific permissions
+- Audit Trail: Complete transparency with immutable activity logs
+- MetaMask Integration: Secure wallet-based authentication
+- Real-time Collaboration: Multi-stakeholder evidence management
+
+## User Roles
+1. Public Viewer - View publicly released cases and evidence
+2. Investigator - Create cases and manage investigations
+3. Forensic Analyst - Analyze and process evidence
+4. Legal Professional - Legal review and case preparation
+5. Court Official - Court proceedings and case management
+6. Evidence Manager - Manage evidence lifecycle and access
+7. Auditor - System auditing and compliance
+8. Administrator - System administration and oversight
+
+## Technology Stack
+- Frontend: HTML5, CSS3, JavaScript
+- Blockchain: Ethereum/Polygon
+- Storage: IPFS (Pinata)
+- Wallet: MetaMask integration
+
+## Use Cases
+- Criminal investigations
+- Civil litigation
+- Corporate compliance
+- Forensic analysis
+- Regulatory audits
+
+## Security & Compliance
+Enterprise-grade security standards with legal compliance for evidence handling. All data is encrypted, access is logged, and blockchain provides immutable chain of custody.
