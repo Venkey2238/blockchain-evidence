@@ -1,20 +1,13 @@
-// Modern Evidence Management System - Optimized
+// Simplified Evidence Management System
 let web3, userAccount;
 
 const roleNames = {
-    0: 'None', 1: 'Public Viewer', 2: 'Investigator', 3: 'Forensic Analyst',
+    1: 'Public Viewer', 2: 'Investigator', 3: 'Forensic Analyst',
     4: 'Legal Professional', 5: 'Court Official', 6: 'Evidence Manager',
     7: 'Auditor', 8: 'Administrator'
 };
 
-const roleDashboards = {
-    1: 'dashboard-public-viewer.html', 2: 'dashboard-public-viewer.html',
-    3: 'dashboard-public-viewer.html', 4: 'dashboard-public-viewer.html',
-    5: 'dashboard-public-viewer.html', 6: 'dashboard-public-viewer.html',
-    7: 'dashboard-public-viewer.html', 8: 'dashboard-public-viewer.html'
-};
-
-// Optimized DOM ready
+// Initialize app
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeApp);
 } else {
@@ -23,7 +16,6 @@ if (document.readyState === 'loading') {
 
 async function initializeApp() {
     try {
-        // Cache DOM elements
         const connectBtn = document.getElementById('connectWallet');
         const regForm = document.getElementById('registrationForm');
         const dashBtn = document.getElementById('goToDashboard');
@@ -32,7 +24,7 @@ async function initializeApp() {
         if (regForm) regForm.addEventListener('submit', handleRegistration);
         if (dashBtn) dashBtn.addEventListener('click', goToDashboard);
 
-        // Check for existing connection
+        // Auto-connect if MetaMask is available
         if (window.ethereum) {
             const accounts = await window.ethereum.request({ method: 'eth_accounts' }).catch(() => []);
             if (accounts.length > 0) {
@@ -48,16 +40,11 @@ async function connectWallet() {
     try {
         showLoading(true);
         
-        if (config.DEMO_MODE) {
+        // Demo mode for testing
+        if (!window.ethereum) {
             userAccount = '0x1234567890123456789012345678901234567890';
             updateWalletUI();
             await checkRegistrationStatus();
-            showLoading(false);
-            return;
-        }
-        
-        if (!window.ethereum) {
-            showAlert('MetaMask not detected. Please install MetaMask.', 'error');
             showLoading(false);
             return;
         }
@@ -89,7 +76,7 @@ function updateWalletUI() {
     if (walletAddr) walletAddr.textContent = userAccount;
     if (walletStatus) walletStatus.classList.remove('hidden');
     if (connectBtn) {
-        connectBtn.textContent = config.DEMO_MODE ? 'Connected (Demo)' : 'Connected';
+        connectBtn.textContent = 'Connected';
         connectBtn.disabled = true;
     }
 }
@@ -101,49 +88,43 @@ async function checkRegistrationStatus() {
             return;
         }
         
-        // Check IndexedDB first, then localStorage as fallback
+        // Check database first
         let userInfo = await storage.getUser(userAccount);
         
+        // Fallback to localStorage
         if (!userInfo) {
-            // Fallback to localStorage
             const savedUser = localStorage.getItem('evidUser_' + userAccount);
             if (savedUser) {
                 userInfo = JSON.parse(savedUser);
-                // Migrate to IndexedDB
-                userInfo.walletAddress = userAccount;
-                await storage.saveUser(userInfo);
             }
         }
         
         if (userInfo) {
             updateUserUI(userInfo);
             toggleSections('alreadyRegistered');
-            // Log login activity
-            await storage.logActivity(userAccount, 'USER_LOGIN', 'User logged in');
             return;
         }
         
         toggleSections('registration');
     } catch (error) {
         console.error('Registration check error:', error);
-        showAlert('Error checking registration: ' + error.message, 'error');
+        showAlert('Error checking registration. Please try again.', 'error');
         toggleSections('registration');
     }
 }
 
 function updateUserUI(userInfo) {
-    const elements = {
-        userName: document.getElementById('userName'),
-        userRoleName: document.getElementById('userRoleName'),
-        userDepartment: document.getElementById('userDepartment')
-    };
+    const userName = document.getElementById('userName');
+    const userRoleName = document.getElementById('userRoleName');
+    const userDepartment = document.getElementById('userDepartment');
     
-    if (elements.userName) elements.userName.textContent = userInfo.fullName;
-    if (elements.userRoleName) {
-        elements.userRoleName.textContent = roleNames[userInfo.role];
-        elements.userRoleName.className = `badge badge-${getRoleClass(userInfo.role)}`;
+    if (userName) userName.textContent = userInfo.fullName || userInfo.full_name;
+    if (userRoleName) {
+        const role = userInfo.role;
+        userRoleName.textContent = roleNames[role];
+        userRoleName.className = `badge badge-${getRoleClass(role)}`;
     }
-    if (elements.userDepartment) elements.userDepartment.textContent = userInfo.department || 'Public';
+    if (userDepartment) userDepartment.textContent = userInfo.department || 'Public';
 }
 
 function toggleSections(activeSection) {
@@ -178,18 +159,23 @@ async function handleRegistration(event) {
             return;
         }
         
-        // Save to localStorage (backward compatibility)
+        // Save to localStorage for immediate access
         localStorage.setItem('evidUser_' + userAccount, JSON.stringify(formData));
         
-        // Save to Supabase for persistent storage
+        // Save to database
         formData.walletAddress = userAccount;
-        await storage.saveUser(formData);
+        const saved = await storage.saveUser(formData);
         
-        // Set current user for dashboard access
+        // Set current user
         localStorage.setItem('currentUser', userAccount);
         
         showLoading(false);
-        showAlert('Registration successful! Redirecting to dashboard...', 'success');
+        
+        if (saved) {
+            showAlert('Registration successful! Redirecting to dashboard...', 'success');
+        } else {
+            showAlert('Registration saved locally. Database sync will retry later.', 'info');
+        }
         
         setTimeout(() => {
             window.location.href = 'dashboard.html';
@@ -214,9 +200,9 @@ function getFormData() {
     return {
         fullName,
         role,
-        department: role === 1 ? 'Public' : document.getElementById('department')?.value,
-        badgeNumber: role === 1 ? '' : document.getElementById('badgeNumber')?.value,
-        jurisdiction: role === 1 ? 'Public' : document.getElementById('jurisdiction')?.value,
+        department: role === 1 ? 'Public' : document.getElementById('department')?.value || 'Unknown',
+        badgeNumber: role === 1 ? '' : document.getElementById('badgeNumber')?.value || '',
+        jurisdiction: role === 1 ? 'Public' : document.getElementById('jurisdiction')?.value || 'Unknown',
         registrationDate: Date.now(),
         isRegistered: true,
         isActive: true
@@ -253,12 +239,21 @@ function showAlert(message, type) {
     const alert = document.createElement('div');
     alert.className = `alert alert-${type}`;
     alert.innerHTML = message;
+    alert.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        max-width: 400px;
+        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
+    `;
     
-    const container = document.querySelector('.container');
-    if (container) {
-        container.insertBefore(alert, container.firstChild);
-        setTimeout(() => alert.remove(), 5000);
-    }
+    document.body.appendChild(alert);
+    setTimeout(() => alert.remove(), 5000);
 }
 
 // Ethereum event listeners

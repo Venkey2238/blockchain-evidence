@@ -26,9 +26,16 @@ class Storage {
                     is_active: true
                 })
             });
-            return response.ok;
+            
+            if (response.ok) {
+                console.log('User saved to database successfully');
+                return true;
+            } else {
+                console.error('Database save failed, using localStorage fallback');
+                return false;
+            }
         } catch (error) {
-            console.error('Save user error:', error);
+            console.error('Database connection error:', error);
             return false;
         }
     }
@@ -38,13 +45,19 @@ class Storage {
             const response = await fetch(`${this.apiUrl}/users?wallet_address=eq.${walletAddress}`, {
                 headers: this.headers
             });
+            
             if (response.ok) {
                 const users = await response.json();
-                return users.length > 0 ? users[0] : null;
+                if (users.length > 0) {
+                    console.log('User found in database');
+                    return users[0];
+                }
             }
+            
+            console.log('User not found in database, checking localStorage');
             return null;
         } catch (error) {
-            console.error('Get user error:', error);
+            console.error('Database connection error:', error);
             return null;
         }
     }
@@ -105,6 +118,25 @@ class Storage {
         } catch (error) {
             console.error('Get evidence error:', error);
             return null;
+        }
+    }
+
+    // Activity Logging
+    async logActivity(userId, action, details) {
+        try {
+            await fetch(`${this.apiUrl}/activity_logs`, {
+                method: 'POST',
+                headers: this.headers,
+                body: JSON.stringify({
+                    user_id: userId,
+                    action: action,
+                    details: details,
+                    timestamp: new Date().toISOString(),
+                    ip_address: 'unknown'
+                })
+            });
+        } catch (error) {
+            console.error('Log activity error:', error);
         }
     }
 
