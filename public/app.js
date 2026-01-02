@@ -1,13 +1,32 @@
-// Clean Evidence Management System - Enhanced with Admin Management
+/**
+ * Clean Evidence Management System - Enhanced with Admin Management
+ * @fileoverview Main application logic for EVID-DGC blockchain evidence management system
+ * @author EVID-DGC Team
+ * @version 1.0.0
+ */
+
 /* global trackUserAction, trackEvent */
+
+/**
+ * Current user's wallet account address
+ * @type {string|null}
+ */
 let userAccount;
 
+/**
+ * Mapping of role numbers to human-readable role names
+ * @type {Object<number, string>}
+ */
 const roleNames = {
     1: 'Public Viewer', 2: 'Investigator', 3: 'Forensic Analyst',
     4: 'Legal Professional', 5: 'Court Official', 6: 'Evidence Manager',
     7: 'Auditor', 8: 'Administrator'
 };
 
+/**
+ * Mapping of role numbers to database role strings
+ * @type {Object<number, string>}
+ */
 const roleMapping = {
     1: 'public_viewer', 2: 'investigator', 3: 'forensic_analyst',
     4: 'legal_professional', 5: 'court_official', 6: 'evidence_manager',
@@ -18,9 +37,13 @@ const roleMapping = {
 document.addEventListener('DOMContentLoaded', initializeApp);
 
 /**
- * Set up application event handlers, initialize the hamburger menu, and attempt to auto-connect MetaMask if available.
- *
- * Attaches click/submit handlers for wallet connection, registration submission, and dashboard navigation, initializes the hamburger menu UI, and, when a web3 provider exists, tries to restore an existing MetaMask connection.
+ * Initialize the application by setting up event handlers and auto-connecting MetaMask
+ * Sets up application event handlers, initializes the hamburger menu, and attempts to auto-connect MetaMask if available.
+ * Attaches click/submit handlers for wallet connection, registration submission, and dashboard navigation, 
+ * initializes the hamburger menu UI, and, when a web3 provider exists, tries to restore an existing MetaMask connection.
+ * @async
+ * @function initializeApp
+ * @returns {Promise<void>} Promise that resolves when initialization is complete
  */
 async function initializeApp() {
     const connectBtn = document.getElementById('connectWallet');
@@ -48,11 +71,12 @@ async function initializeApp() {
 }
 
 /**
+ * Initialize the hamburger menu functionality for mobile navigation
  * Sets up the hamburger menu toggle and closes the menu when a navigation link is clicked.
- *
  * If elements with IDs "menuToggle" or "navMenu" are not present, the function does nothing.
+ * @function initializeHamburgerMenu
+ * @returns {void}
  */
-// Initialize hamburger menu
 function initializeHamburgerMenu() {
     const menuToggle = document.getElementById('menuToggle');
     const navMenu = document.getElementById('navMenu');
@@ -72,9 +96,15 @@ function initializeHamburgerMenu() {
     }
 }
 /**
- * Connects to the user's Ethereum wallet (MetaMask) or uses a demo address when MetaMask is unavailable, then updates application state and UI.
- *
- * Attempts to request accounts from window.ethereum; on success, sets the global `userAccount`, updates the wallet UI, and checks the user's registration status. If no provider is present, assigns a fixed demo address, updates UI, and checks registration. Shows loading and error alerts as needed and records analytics events when `trackUserAction` is available.
+ * Connect to the user's Ethereum wallet (MetaMask) or use demo mode
+ * Connects to the user's Ethereum wallet (MetaMask) or uses a demo address when MetaMask is unavailable, 
+ * then updates application state and UI. Attempts to request accounts from window.ethereum; on success, 
+ * sets the global `userAccount`, updates the wallet UI, and checks the user's registration status. 
+ * If no provider is present, assigns a fixed demo address, updates UI, and checks registration. 
+ * Shows loading and error alerts as needed and records analytics events when `trackUserAction` is available.
+ * @async
+ * @function connectWallet
+ * @returns {Promise<void>} Promise that resolves when wallet connection is complete
  */
 async function connectWallet() {
     try {
@@ -152,6 +182,12 @@ async function connectWallet() {
     }
 }
 
+/**
+ * Update the wallet UI elements after successful connection
+ * Updates the wallet address display, shows wallet status section, and disables connect button
+ * @function updateWalletUI
+ * @returns {void}
+ */
 function updateWalletUI() {
     const walletAddr = document.getElementById('walletAddress');
     const walletStatus = document.getElementById('walletStatus');
@@ -166,8 +202,8 @@ function updateWalletUI() {
 }
 
 /**
+ * Check if the current wallet is registered and update UI accordingly
  * Verify whether the currently connected wallet address is registered and update the UI to reflect the result.
- *
  * Checks the primary database (via `window.storage.getUser`) when available, falls back to `localStorage` for backward
  * compatibility, and updates the interface accordingly:
  * - If the account is inactive, shows an error and logs the user out.
@@ -175,6 +211,9 @@ function updateWalletUI() {
  * - If the account is a regular registered user, configures the user UI and shows the "already registered" section.
  * - If no record is found, displays the registration form.
  * On unexpected errors, shows an error alert and displays the registration form.
+ * @async
+ * @function checkRegistrationStatus
+ * @returns {Promise<void>} Promise that resolves when registration check is complete
  */
 async function checkRegistrationStatus() {
     try {
@@ -243,6 +282,17 @@ async function checkRegistrationStatus() {
     }
 }
 
+/**
+ * Update UI for regular user display
+ * Updates the user interface elements with regular user information
+ * @function updateUserUI
+ * @param {Object} userInfo - User information object
+ * @param {string} userInfo.fullName - User's full name
+ * @param {string} userInfo.full_name - Alternative full name property
+ * @param {number|string} userInfo.role - User's role identifier
+ * @param {string} userInfo.department - User's department
+ * @returns {void}
+ */
 function updateUserUI(userInfo) {
     const userName = document.getElementById('userName');
     const userRoleName = document.getElementById('userRoleName');
@@ -257,6 +307,15 @@ function updateUserUI(userInfo) {
     if (userDepartment) userDepartment.textContent = userInfo.department || 'Public';
 }
 
+/**
+ * Update UI for admin user display
+ * Updates the user interface elements with admin user information and modifies dashboard button
+ * @function updateAdminUI
+ * @param {Object} userInfo - Admin user information object
+ * @param {string} userInfo.fullName - Admin's full name
+ * @param {string} userInfo.full_name - Alternative full name property
+ * @returns {void}
+ */
 function updateAdminUI(userInfo) {
     const userName = document.getElementById('userName');
     const userRoleName = document.getElementById('userRoleName');
@@ -277,6 +336,13 @@ function updateAdminUI(userInfo) {
     }
 }
 
+/**
+ * Toggle visibility of different UI sections
+ * Shows the specified section and hides all others
+ * @function toggleSections
+ * @param {string} activeSection - The section to show ('wallet', 'registration', 'alreadyRegistered')
+ * @returns {void}
+ */
 function toggleSections(activeSection) {
     const sections = {
         wallet: document.getElementById('walletSection'),
@@ -292,10 +358,13 @@ function toggleSections(activeSection) {
 }
 
 /**
+ * Handle user registration form submission
  * Handle the registration form submission: validate input, persist the new user's data, track the registration event, and redirect to the dashboard on success.
- *
  * Prevents administrator self-registration, requires a connected wallet, saves the prepared user record to localStorage (always) and to window.storage when available, shows loading/alert UI for status, and attempts to track the registration via analytics when available.
- * @param {Event} event - The form submit event.
+ * @async
+ * @function handleRegistration
+ * @param {Event} event - The form submit event
+ * @returns {Promise<void>} Promise that resolves when registration is complete
  */
 async function handleRegistration(event) {
     event.preventDefault();
@@ -373,6 +442,20 @@ async function handleRegistration(event) {
     }
 }
 
+/**
+ * Extract and validate form data from registration form
+ * Retrieves form data and validates required fields
+ * @function getFormData
+ * @returns {Object|null} Form data object or null if validation fails
+ * @returns {string} returns.fullName - User's full name
+ * @returns {number} returns.role - User's role number
+ * @returns {string} returns.department - User's department
+ * @returns {string} returns.badgeNumber - User's badge number
+ * @returns {string} returns.jurisdiction - User's jurisdiction
+ * @returns {number} returns.registrationDate - Registration timestamp
+ * @returns {boolean} returns.isRegistered - Registration status
+ * @returns {boolean} returns.isActive - Active status
+ */
 function getFormData() {
     const fullName = document.getElementById('fullName')?.value;
     const role = parseInt(document.getElementById('userRole')?.value);
@@ -394,6 +477,13 @@ function getFormData() {
     };
 }
 
+/**
+ * Navigate to appropriate dashboard based on user role
+ * Determines user role and redirects to the appropriate dashboard page
+ * @async
+ * @function goToDashboard
+ * @returns {Promise<void>} Promise that resolves when navigation is complete
+ */
 async function goToDashboard() {
     localStorage.setItem('currentUser', userAccount);
 
@@ -441,6 +531,13 @@ async function goToDashboard() {
     }
 }
 
+/**
+ * Navigate to admin dashboard
+ * Sets current user in localStorage and redirects to admin dashboard
+ * @async
+ * @function goToAdminDashboard
+ * @returns {Promise<void>} Promise that resolves when navigation is complete
+ */
 async function goToAdminDashboard() {
     localStorage.setItem('currentUser', userAccount);
     window.location.href = 'admin.html';
@@ -513,11 +610,26 @@ function disconnectWallet() {
     showAlert('Wallet disconnected. You can now connect a different account.', 'success');
 }
 
+/**
+ * Show or hide loading modal
+ * Controls the visibility of the loading modal overlay
+ * @function showLoading
+ * @param {boolean} show - Whether to show (true) or hide (false) the loading modal
+ * @returns {void}
+ */
 function showLoading(show) {
     const modal = document.getElementById('loadingModal');
     if (modal) modal.classList.toggle('active', show);
 }
 
+/**
+ * Display alert message to user
+ * Creates and displays a temporary alert message with specified type and styling
+ * @function showAlert
+ * @param {string} message - The message to display
+ * @param {string} type - The alert type ('success', 'error', 'info')
+ * @returns {void}
+ */
 function showAlert(message, type) {
     // Remove existing alerts
     document.querySelectorAll('.alert').forEach(alert => alert.remove());

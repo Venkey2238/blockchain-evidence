@@ -1,5 +1,21 @@
-// Enhanced Storage with Admin Management & Test Accounts
+/**
+ * Enhanced Storage with Admin Management & Test Accounts
+ * @fileoverview Database storage layer for EVID-DGC application with Supabase integration
+ * @author EVID-DGC Team
+ * @version 1.0.0
+ */
+
+/**
+ * Storage class for managing database operations
+ * Handles user management, evidence storage, and admin operations with Supabase backend
+ * @class Storage
+ */
 class Storage {
+    /**
+     * Initialize Storage instance with Supabase configuration
+     * Sets up API URL and authentication headers for database operations
+     * @constructor
+     */
     constructor() {
         this.apiUrl = `${config.SUPABASE_URL}/rest/v1`;
         this.headers = {
@@ -9,7 +25,24 @@ class Storage {
         };
     }
 
-    // Enhanced User Management with Security
+    /**
+     * Save user data to database with validation and security checks
+     * Enhanced User Management with Security - validates role, prevents admin self-registration,
+     * and saves user data to Supabase database with fallback to localStorage
+     * @async
+     * @method saveUser
+     * @param {Object} userData - User data object
+     * @param {string} userData.walletAddress - User's wallet address
+     * @param {string} userData.fullName - User's full name
+     * @param {string} userData.role - User's role (must be valid role)
+     * @param {string} [userData.department] - User's department
+     * @param {string} [userData.jurisdiction] - User's jurisdiction
+     * @param {string} [userData.badgeNumber] - User's badge number
+     * @param {string} [userData.accountType='real'] - Account type (real/test)
+     * @param {string} [userData.createdBy='self'] - Who created this account
+     * @returns {Promise<boolean>} True if successful, false if failed (allows localStorage fallback)
+     * @throws {Error} If role is invalid or admin self-registration attempted
+     */
     async saveUser(userData) {
         try {
             // Validate role
@@ -53,6 +86,14 @@ class Storage {
         }
     }
 
+    /**
+     * Retrieve user data from database by wallet address
+     * Fetches user information from Supabase database for active users only
+     * @async
+     * @method getUser
+     * @param {string} walletAddress - The wallet address to search for
+     * @returns {Promise<Object|null>} User object if found, null if not found or error
+     */
     async getUser(walletAddress) {
         try {
             const response = await fetch(`${this.apiUrl}/users?wallet_address=eq.${walletAddress}&is_active=eq.true`, {
@@ -75,7 +116,22 @@ class Storage {
         }
     }
 
-    // Regular User Creation (Admin-Only)
+    /**
+     * Create a regular user account (Admin-Only operation)
+     * Allows administrators to create regular user accounts with validation and security checks
+     * @async
+     * @method createRegularUser
+     * @param {string} adminWallet - Wallet address of the requesting administrator
+     * @param {Object} userData - User data for the new account
+     * @param {string} userData.walletAddress - New user's wallet address (must be valid format)
+     * @param {string} userData.fullName - New user's full name
+     * @param {string} userData.role - New user's role (cannot be admin)
+     * @param {string} [userData.department='General'] - New user's department
+     * @param {string} [userData.jurisdiction='General'] - New user's jurisdiction
+     * @param {string} [userData.badgeNumber=''] - New user's badge number
+     * @returns {Promise<boolean>} True if user created successfully
+     * @throws {Error} If unauthorized, invalid role, invalid wallet format, or wallet already exists
+     */
     async createRegularUser(adminWallet, userData) {
         try {
             // Verify the requesting user is actually an admin
@@ -134,7 +190,13 @@ class Storage {
         }
     }
 
-    // Admin Functions
+    /**
+     * Get all users from database (Admin function)
+     * Retrieves all user records ordered by creation date (newest first)
+     * @async
+     * @method getAllUsers
+     * @returns {Promise<Array>} Array of user objects, empty array if error
+     */
     async getAllUsers() {
         try {
             const response = await fetch(`${this.apiUrl}/users?order=created_at.desc`, {
@@ -179,6 +241,18 @@ class Storage {
         }
     }
 
+    /**
+     * Create a new administrator account (Admin-Only operation)
+     * Allows existing administrators to create new admin accounts with limits and validation
+     * @async
+     * @method createAdminUser
+     * @param {string} adminWallet - Wallet address of the requesting administrator
+     * @param {Object} newAdminData - Data for the new administrator account
+     * @param {string} newAdminData.walletAddress - New admin's wallet address (must be valid format)
+     * @param {string} newAdminData.fullName - New admin's full name
+     * @returns {Promise<boolean>} True if admin created successfully
+     * @throws {Error} If unauthorized, admin limit reached, invalid wallet format, or wallet already exists
+     */
     async createAdminUser(adminWallet, newAdminData) {
         try {
             // Verify the requesting user is actually an admin
@@ -468,7 +542,13 @@ class Storage {
         }
     }
 
-    // Utility Functions
+    /**
+     * Convert file to Base64 encoded string
+     * Utility function to convert File objects to Base64 for storage
+     * @method fileToBase64
+     * @param {File} file - File object to convert
+     * @returns {Promise<string>} Base64 encoded string representation of the file
+     */
     fileToBase64(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -478,6 +558,14 @@ class Storage {
         });
     }
 
+    /**
+     * Generate SHA-256 hash of data
+     * Creates a cryptographic hash of the provided data for integrity verification
+     * @async
+     * @method generateHash
+     * @param {string} data - Data to hash
+     * @returns {Promise<string>} Hexadecimal string representation of the hash
+     */
     async generateHash(data) {
         const encoder = new TextEncoder();
         const dataBuffer = encoder.encode(data);
@@ -486,6 +574,14 @@ class Storage {
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
+    /**
+     * Validate uploaded file against size and type restrictions
+     * Checks file size and MIME type against configured limits
+     * @method validateFile
+     * @param {File} file - File object to validate
+     * @returns {boolean} True if file is valid
+     * @throws {Error} If file exceeds size limit or has invalid type
+     */
     validateFile(file) {
         if (file.size > config.MAX_FILE_SIZE) {
             throw new Error('File size exceeds 50MB limit');
@@ -497,5 +593,10 @@ class Storage {
     }
 }
 
-// Initialize storage
+/**
+ * Global storage instance
+ * Initialize and expose the Storage class instance for application use
+ * @type {Storage}
+ * @global
+ */
 window.storage = new Storage();
