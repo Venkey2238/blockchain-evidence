@@ -6,3 +6,4 @@ node_modules
 
 # Ignore .secret-stack folder
 .secret-stack
+.env

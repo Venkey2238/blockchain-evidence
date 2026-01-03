@@ -2,7 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
 const rateLimit = require('express-rate-limit');
-const authRoutes = require("./routes/auth.routes");
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./config/swagger");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -16,6 +17,10 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static('public'));
+
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 
 // Rate limiting
 const limiter = rateLimit({
@@ -202,11 +207,46 @@ const checkCasePermission = async (req, res, next) => {
 // API Routes
 app.use("/api/auth", authRoutes);
 // Health check
+/**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     summary: API health check
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: Server is running
+ */
+
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
 // Get user by wallet address
+/**
+ * @swagger
+ * /api/user/{wallet}:
+ *   get:
+ *     summary: Get user by wallet address
+ *     tags: [User]
+ *     parameters:
+ *       - in: path
+ *         name: wallet
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: "0xA1B2C3D4E5F6789012345678901234567890ABCD"
+ *     security:
+ *       - UserWallet: []
+ *     responses:
+ *       200:
+ *         description: User data returned
+ *       400:
+ *         description: Invalid wallet address
+ *       404:
+ *         description: User not found
+ */
+
 app.get('/api/user/:wallet', async (req, res) => {
     try {
         const { wallet } = req.params;
@@ -234,6 +274,31 @@ app.get('/api/user/:wallet', async (req, res) => {
 });
 
 // Create regular user (Admin only)
+/**
+ * @swagger
+ * /api/admin/create-user:
+ *   post:
+ *     summary: Create regular user (Admin only)
+ *     tags: [Admin]
+ *     security:
+ *       - AdminWallet: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             adminWallet: "0xADMIN..."
+ *             userData:
+ *               walletAddress: "0xUSER..."
+ *               fullName: "John Doe"
+ *               role: "investigator"
+ *     responses:
+ *       200:
+ *         description: User created successfully
+ *       403:
+ *         description: Admin privileges required
+ */
+
 app.post('/api/admin/create-user', adminLimiter, verifyAdmin, async (req, res) => {
     try {
         const { adminWallet, userData } = req.body;
@@ -299,6 +364,19 @@ app.post('/api/admin/create-user', adminLimiter, verifyAdmin, async (req, res) =
 });
 
 // Create admin user (Admin only)
+/**
+ * @swagger
+ * /api/admin/create-admin:
+ *   post:
+ *     summary: Create admin user
+ *     tags: [Admin]
+ *     security:
+ *       - AdminWallet: []
+ *     responses:
+ *       200:
+ *         description: Admin created
+ */
+
 app.post('/api/admin/create-admin', adminLimiter, verifyAdmin, async (req, res) => {
     try {
         const { adminWallet, adminData } = req.body;
@@ -368,6 +446,21 @@ app.post('/api/admin/create-admin', adminLimiter, verifyAdmin, async (req, res) 
 });
 
 // Delete user (Admin only)
+/**
+ * @swagger
+ * /api/admin/delete-user:
+ *   post:
+ *     summary: Delete user (soft delete)
+ *     tags: [Admin]
+ *     security:
+ *       - AdminWallet: []
+ *     responses:
+ *       200:
+ *         description: User deleted
+ *       404:
+ *         description: User not found
+ */
+
 app.post('/api/admin/delete-user', adminLimiter, verifyAdmin, async (req, res) => {
     try {
         const { adminWallet, targetWallet } = req.body;
@@ -420,6 +513,19 @@ app.post('/api/admin/delete-user', adminLimiter, verifyAdmin, async (req, res) =
 });
 
 // Get all users (Admin only)
+/**
+ * @swagger
+ * /api/admin/users:
+ *   post:
+ *     summary: Get all users (Admin only)
+ *     tags: [Admin]
+ *     security:
+ *       - AdminWallet: []
+ *     responses:
+ *       200:
+ *         description: Users list returned
+ */
+
 app.post('/api/admin/users', adminLimiter, verifyAdmin, async (req, res) => {
     try {
         const { data: users, error } = await supabase
@@ -448,6 +554,19 @@ app.post('/api/user/delete-self', (req, res) => {
 // Case Management APIs
 
 // Get cases visible to user based on role and permissions
+/**
+ * @swagger
+ * /api/cases:
+ *   get:
+ *     summary: Get cases visible to current user
+ *     tags: [Cases]
+ *     security:
+ *       - UserWallet: []
+ *     responses:
+ *       200:
+ *         description: List of cases
+ */
+
 app.get('/api/cases', async (req, res) => {
     try {
         const userWallet = req.headers['x-user-wallet'];
@@ -513,6 +632,22 @@ app.get('/api/cases', async (req, res) => {
 });
 
 // Get specific case details
+/**
+ * @swagger
+ * /api/cases/{caseId}:
+ *   get:
+ *     summary: Get case details by case ID
+ *     tags: [Cases]
+ *     parameters:
+ *       - in: path
+ *         name: caseId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     security:
+ *       - UserWallet: []
+ */
+
 app.get('/api/cases/:caseId', checkCasePermission, async (req, res) => {
     try {
         const { caseId } = req.params;
@@ -544,6 +679,37 @@ app.get('/api/cases/:caseId', checkCasePermission, async (req, res) => {
 });
 
 // Create new case (Investigators only)
+/**
+ * @swagger
+ * /api/cases:
+ *   post:
+ *     summary: Create a new case (Investigator/Admin)
+ *     tags: [Cases]
+ *     security:
+ *       - UserWallet: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             title: "Cyber Fraud Case"
+ *             description: "UPI scam investigation"
+ *             crimeType: "Financial Fraud"
+ *             location: "Mumbai"
+ *             suspects: ["Unknown"]
+ *     responses:
+ *       200:
+ *         description: Case created successfully
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Only investigators can create cases
+ *       500:
+ *         description: Internal server error
+ */
+
 app.post('/api/cases', async (req, res) => {
     try {
         const userWallet = req.headers['x-user-wallet'];
@@ -604,6 +770,16 @@ app.post('/api/cases', async (req, res) => {
 });
 
 // Update case status (Role-based permissions)
+/**
+ * @swagger
+ * /api/cases/{caseId}/status:
+ *   put:
+ *     summary: Update case status
+ *     tags: [Cases]
+ *     security:
+ *       - UserWallet: []
+ */
+
 app.put('/api/cases/:caseId/status', checkCasePermission, async (req, res) => {
     try {
         const { caseId } = req.params;
@@ -662,6 +838,16 @@ app.put('/api/cases/:caseId/status', checkCasePermission, async (req, res) => {
 });
 
 // Assign case to role (Permission-based)
+/**
+ * @swagger
+ * /api/cases/{caseId}/assign:
+ *   post:
+ *     summary: Assign case to a role
+ *     tags: [Cases]
+ *     security:
+ *       - UserWallet: []
+ */
+
 app.post('/api/cases/:caseId/assign', checkCasePermission, async (req, res) => {
     try {
         const { caseId } = req.params;
@@ -754,6 +940,16 @@ app.post('/api/cases/:caseId/assign', checkCasePermission, async (req, res) => {
 // Evidence Management APIs
 
 // Get evidence for a case
+/**
+ * @swagger
+ * /api/cases/{caseId}/evidence:
+ *   get:
+ *     summary: Get evidence for a case
+ *     tags: [Evidence]
+ *     security:
+ *       - UserWallet: []
+ */
+
 app.get('/api/cases/:caseId/evidence', checkCasePermission, async (req, res) => {
     try {
         const { caseId } = req.params;
@@ -780,6 +976,16 @@ app.get('/api/cases/:caseId/evidence', checkCasePermission, async (req, res) => 
 });
 
 // Upload evidence
+/** 
+ * @swagger
+ * /api/cases/{caseId}/evidence:
+ *   post:
+ *     summary: Upload evidence to a case
+ *     tags: [Evidence]
+ *     security:
+ *       - UserWallet: []
+ */
+
 app.post('/api/cases/:caseId/evidence', checkCasePermission, async (req, res) => {
     try {
         const { caseId } = req.params;
@@ -828,6 +1034,16 @@ app.post('/api/cases/:caseId/evidence', checkCasePermission, async (req, res) =>
 });
 
 // Get dashboard statistics for user
+/**
+ * @swagger
+ * /api/dashboard/stats:
+ *   get:
+ *     summary: Get dashboard statistics
+ *     tags: [Dashboard]
+ *     security:
+ *       - UserWallet: []
+ */
+
 app.get('/api/dashboard/stats', async (req, res) => {
     try {
         const userWallet = req.headers['x-user-wallet'];
