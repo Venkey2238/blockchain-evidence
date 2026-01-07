@@ -7,8 +7,10 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="config.js"></script>
     <script src="storage.js"></script>
+    <script src="simple-notifications.js"></script>
     <script src="indian-apis.js"></script>
 </head>
 <body>
@@ -19,6 +21,7 @@
                 <div class="nav-items">
                     <span class="badge badge-admin">Administrator</span>
                     <span id="adminWallet" class="wallet-display">Loading...</span>
+                    <!-- Notification Bell will be added here by notifications.js -->
                     <button class="btn btn-outline btn-sm" onclick="logout()">Logout</button>
                 </div>
             </div>
@@ -231,6 +234,17 @@
             await loadAllUsers();
             await loadRoleTestingDashboard();
             initializeEventListeners();
+            
+            // Test notification after everything loads
+            setTimeout(() => {
+                if (window.simpleNotifications) {
+                    window.simpleNotifications.addNotification(
+                        'Admin Dashboard Ready',
+                        'All systems operational!',
+                        'system'
+                    );
+                }
+            }, 2000);
         });
 
         async function createDefaultTestAccounts() {

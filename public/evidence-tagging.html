@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evidence Tagging System - EVID-DGC</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .tagging-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .tagging-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .tag-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .tag-creation {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .tag-search {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .color-input {
+            width: 60px !important;
+            height: 40px;
+            padding: 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .tag-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .tag-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .tag-badge {
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .tag-usage {
+            background: #f3f4f6;
+            color: #6b7280;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+
+        .tag-category {
+            color: #6b7280;
+            font-size: 12px;
+            text-transform: capitalize;
+        }
+
+        .tag-suggestions {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .tag-suggestion {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .tag-suggestion:hover {
+            background: #f9fafb;
+        }
+
+        .btn-select-tag {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .selected-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 6px;
+            min-height: 50px;
+        }
+
+        .selected-tag {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .remove-tag {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 0;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .evidence-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .evidence-item {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .evidence-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .evidence-checkbox {
+            width: 18px;
+            height: 18px;
+        }
+
+        .evidence-details p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .evidence-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 15px 0;
+        }
+
+        .evidence-tag {
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+
+        .evidence-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-tag {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .batch-actions {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .filter-logic {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: black;
+        }
+
+        .message {
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .message-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .message-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .message-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fcd34d;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="tagging-container">
+        <div class="tagging-header">
+            <h1>🏷️ Evidence Tagging System</h1>
+            <button onclick="window.location.href='dashboard.html'" class="btn btn-secondary">
+                Back to Dashboard
+            </button>
+        </div>
+
+        <div id="messageContainer"></div>
+
+        <div class="tag-controls">
+            <div class="tag-creation">
+                <h3>Create New Tag</h3>
+                <form id="createTagForm">
+                    <div class="form-group">
+                        <label for="tagName">Tag Name</label>
+                        <input type="text" id="tagName" name="tagName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tagColor">Color</label>
+                        <input type="color" id="tagColor" name="tagColor" value="#3B82F6" class="color-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="tagCategory">Category</label>
+                        <select id="tagCategory" name="tagCategory">
+                            <option value="general">General</option>
+                            <option value="priority">Priority</option>
+                            <option value="status">Status</option>
+                            <option value="type">Type</option>
+                            <option value="sensitivity">Sensitivity</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Tag</button>
+                </form>
+            </div>
+
+            <div class="tag-search">
+                <h3>Search Tags</h3>
+                <div class="form-group">
+                    <label for="tagSearch">Search existing tags</label>
+                    <input type="text" id="tagSearch" placeholder="Type to search tags...">
+                </div>
+                <div id="tagSuggestions" class="tag-suggestions"></div>
+            </div>
+        </div>
+
+        <div class="selected-tags">
+            <strong>Selected Tags:</strong>
+            <div id="selectedTags"></div>
+        </div>
+
+        <div class="batch-actions">
+            <h3>Batch Operations</h3>
+            <div class="filter-controls">
+                <button id="batchTagBtn" class="btn btn-success">
+                    Apply Tags to Selected Evidence
+                </button>
+                <div class="filter-logic">
+                    <label>Filter Logic:</label>
+                    <input type="radio" name="filterLogic" value="AND" checked> AND
+                    <input type="radio" name="filterLogic" value="OR"> OR
+                </div>
+                <button onclick="evidenceTagging.filterBySelectedTags()" class="btn btn-primary">
+                    Filter Evidence
+                </button>
+            </div>
+        </div>
+
+        <div class="tag-list">
+            <h3>All Tags</h3>
+            <div id="tagContainer"></div>
+        </div>
+
+        <div class="evidence-container" id="evidenceContainer">
+            <!-- Evidence items will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Tag Modal -->
+    <div id="tagModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Tags to Evidence</h3>
+                <span class="close" onclick="evidenceTagging.hideTagModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Select tags to add to this evidence:</p>
+                <div id="modalSelectedTags" class="selected-tags"></div>
+                <div class="modal-actions">
+                    <button onclick="evidenceTagging.applyTagsToEvidence()" class="btn btn-success">
+                        Apply Tags
+                    </button>
+                    <button onclick="evidenceTagging.hideTagModal()" class="btn btn-secondary">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="storage.js"></script>
+    <script src="evidence-tagging.js"></script>
+    <script>
+        // Additional helper functions
+        window.evidenceTagging.filterBySelectedTags = async function() {
+            const selectedTagIds = Array.from(this.selectedTags);
+            if (selectedTagIds.length === 0) {
+                this.showMessage('Please select tags to filter by', 'warning');
+                return;
+            }
+
+            const logic = document.querySelector('input[name="filterLogic"]:checked').value;
+            await this.filterByTags(selectedTagIds, logic);
+        };
+
+        // Load sample evidence data on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load sample evidence for demonstration
+            const sampleEvidence = [
+                {
+                    id: 1,
+                    name: "Security Camera Footage",
+                    case_number: "CASE-2024-001",
+                    file_type: "video/mp4",
+                    hash: "0x1234567890abcdef",
+                    timestamp: new Date().toISOString(),
+                    evidence_tags: [
+                        { tags: { name: "surveillance-footage", color: "#06B6D4" } },
+                        { tags: { name: "urgent", color: "#EF4444" } }
+                    ]
+                },
+                {
+                    id: 2,
+                    name: "Witness Statement",
+                    case_number: "CASE-2024-002",
+                    file_type: "application/pdf",
+                    hash: "0xabcdef1234567890",
+                    timestamp: new Date().toISOString(),
+                    evidence_tags: [
+                        { tags: { name: "witness-statement", color: "#8B5CF6" } },
+                        { tags: { name: "confidential", color: "#DC2626" } }
+                    ]
+                }
+            ];
+
+            window.evidenceTagging.renderFilteredEvidence(sampleEvidence);
+        });
+    </script>
+</body>
+</html>
