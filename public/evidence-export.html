@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evidence Export - EVID-DGC</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .export-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .evidence-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .evidence-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .evidence-card.selected {
+            border-color: #007bff;
+            background-color: #f8f9ff;
+        }
+        .evidence-checkbox {
+            margin-right: 10px;
+        }
+        .export-actions {
+            position: sticky;
+            bottom: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .watermark-info {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 15px 0;
+            font-size: 12px;
+        }
+        .download-history {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <h1>🔐 EVID-DGC - Evidence Export</h1>
+        </div>
+        <div class="nav-links">
+            <a href="dashboard.html">← Back to Dashboard</a>
+        </div>
+    </nav>
+
+    <div class="export-container">
+        <div class="header-section">
+            <h2>Evidence Export & Download</h2>
+            <p>Download individual evidence files or export multiple files as a ZIP archive. All downloads include watermarking and audit logging.</p>
+            
+            <div class="watermark-info">
+                <strong>🔒 Security Features:</strong>
+                <ul>
+                    <li>Automatic watermarking with your wallet ID and timestamp</li>
+                    <li>Embedded metadata including blockchain hash and chain of custody</li>
+                    <li>Complete audit trail of all downloads</li>
+                    <li>Role-based access control</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0;">
+                <div>
+                    <button class="btn btn-secondary" onclick="selectAll()">Select All</button>
+                    <button class="btn btn-secondary" onclick="clearSelection()">Clear Selection</button>
+                </div>
+                <div>
+                    <span id="selectedCount">0</span> items selected
+                </div>
+            </div>
+        </div>
+
+        <div class="evidence-grid" id="evidenceGrid">
+            <!-- Evidence items will be loaded here -->
+        </div>
+
+        <div class="export-actions">
+            <button class="btn btn-primary" id="downloadSingleBtn" onclick="downloadSelected()" disabled>
+                📥 Download Selected File
+            </button>
+            <button class="btn btn-primary" id="bulkExportBtn" onclick="bulkExport()" disabled>
+                📦 Export as ZIP Archive
+            </button>
+            <button class="btn btn-secondary" onclick="viewDownloadHistory()">
+                📊 View Download History
+            </button>
+        </div>
+
+        <div class="download-history" id="downloadHistory" style="display: none;">
+            <h3>Download History</h3>
+            <div id="historyContent"></div>
+        </div>
+    </div>
+
+    <script src="storage.js"></script>
+    <script>
+        let selectedEvidence = new Set();
+        let currentUser = null;
+        let evidenceItems = [];
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initializePage();
+        });
+
+        async function initializePage() {
+            try {
+                // Get current user from localStorage or MetaMask
+                const walletAddress = localStorage.getItem('currentWallet');
+                if (!walletAddress) {
+                    alert('Please connect your wallet first');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                // Verify user
+                const response = await fetch(`/api/user/${walletAddress}`);
+                const data = await response.json();
+                
+                if (!data.user) {
+                    alert('User not found');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                currentUser = data.user;
+
+                // Check if user can download evidence
+                if (currentUser.role === 'public_viewer') {
+                    alert('Public viewers cannot download evidence');
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+
+                await loadEvidence();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                alert('Failed to initialize page');
+            }
+        }
+
+        async function loadEvidence() {
+            try {
+                // For demo purposes, create mock evidence data
+                evidenceItems = [
+                    {
+                        id: 1,
+                        name: 'Crime Scene Photo 1',
+                        case_number: 'CASE-2024-001',
+                        file_type: 'image/jpeg',
+                        hash: '0x1234...abcd',
+                        submitted_by: '0x1111...1111',
+                        timestamp: '2024-01-15T10:30:00Z',
+                        size: '2.5 MB'
+                    },
+                    {
+                        id: 2,
+                        name: 'Witness Statement',
+                        case_number: 'CASE-2024-001',
+                        file_type: 'application/pdf',
+                        hash: '0x5678...efgh',
+                        submitted_by: '0x2222...2222',
+                        timestamp: '2024-01-16T14:20:00Z',
+                        size: '1.2 MB'
+                    },
+                    {
+                        id: 3,
+                        name: 'Security Footage',
+                        case_number: 'CASE-2024-002',
+                        file_type: 'video/mp4',
+                        hash: '0x9abc...ijkl',
+                        submitted_by: '0x3333...3333',
+                        timestamp: '2024-01-17T09:15:00Z',
+                        size: '15.7 MB'
+                    }
+                ];
+
+                renderEvidence();
+            } catch (error) {
+                console.error('Error loading evidence:', error);
+                alert('Failed to load evidence');
+            }
+        }
+
+        function renderEvidence() {
+            const grid = document.getElementById('evidenceGrid');
+            grid.innerHTML = '';
+
+            evidenceItems.forEach(evidence => {
+                const card = document.createElement('div');
+                card.className = 'evidence-card';
+                card.innerHTML = `
+                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <input type="checkbox" class="evidence-checkbox" 
+                               onchange="toggleSelection(${evidence.id})" 
+                               id="checkbox-${evidence.id}">
+                        <strong>${evidence.name}</strong>
+                    </div>
+                    <div><strong>Case:</strong> ${evidence.case_number}</div>
+                    <div><strong>Type:</strong> ${evidence.file_type}</div>
+                    <div><strong>Size:</strong> ${evidence.size}</div>
+                    <div><strong>Hash:</strong> ${evidence.hash}</div>
+                    <div><strong>Submitted:</strong> ${new Date(evidence.timestamp).toLocaleString()}</div>
+                    <div style="margin-top: 10px;">
+                        <button class="btn btn-primary" onclick="downloadSingle(${evidence.id})" style="font-size: 12px; padding: 5px 10px;">
+                            📥 Download
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleSelection(evidenceId) {
+            const checkbox = document.getElementById(`checkbox-${evidenceId}`);
+            const card = checkbox.closest('.evidence-card');
+            
+            if (checkbox.checked) {
+                selectedEvidence.add(evidenceId);
+                card.classList.add('selected');
+            } else {
+                selectedEvidence.delete(evidenceId);
+                card.classList.remove('selected');
+            }
+            
+            updateSelectionUI();
+        }
+
+        function selectAll() {
+            evidenceItems.forEach(evidence => {
+                selectedEvidence.add(evidence.id);
+                const checkbox = document.getElementById(`checkbox-${evidence.id}`);
+                const card = checkbox.closest('.evidence-card');
+                checkbox.checked = true;
+                card.classList.add('selected');
+            });
+            updateSelectionUI();
+        }
+
+        function clearSelection() {
+            selectedEvidence.clear();
+            document.querySelectorAll('.evidence-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+                checkbox.closest('.evidence-card').classList.remove('selected');
+            });
+            updateSelectionUI();
+        }
+
+        function updateSelectionUI() {
+            const count = selectedEvidence.size;
+            document.getElementById('selectedCount').textContent = count;
+            document.getElementById('downloadSingleBtn').disabled = count !== 1;
+            document.getElementById('bulkExportBtn').disabled = count === 0;
+        }
+
+        async function downloadSingle(evidenceId) {
+            try {
+                const response = await fetch(`/api/evidence/${evidenceId}/download`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userWallet: currentUser.wallet_address
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Download failed');
+                }
+
+                // Get filename from response headers
+                const contentDisposition = response.headers.get('Content-Disposition');
+                const filename = contentDisposition ? 
+                    contentDisposition.split('filename=')[1].replace(/"/g, '') : 
+                    `evidence_${evidenceId}.bin`;
+
+                // Download file
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                alert('Evidence downloaded successfully with watermark applied');
+            } catch (error) {
+                console.error('Download error:', error);
+                alert('Failed to download evidence: ' + error.message);
+            }
+        }
+
+        async function downloadSelected() {
+            if (selectedEvidence.size !== 1) {
+                alert('Please select exactly one file for individual download');
+                return;
+            }
+            
+            const evidenceId = Array.from(selectedEvidence)[0];
+            await downloadSingle(evidenceId);
+        }
+
+        async function bulkExport() {
+            if (selectedEvidence.size === 0) {
+                alert('Please select at least one evidence file');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/evidence/bulk-export', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        evidenceIds: Array.from(selectedEvidence),
+                        userWallet: currentUser.wallet_address
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Export failed');
+                }
+
+                // Get filename from response headers
+                const contentDisposition = response.headers.get('Content-Disposition');
+                const filename = contentDisposition ? 
+                    contentDisposition.split('filename=')[1].replace(/"/g, '') : 
+                    'evidence_export.zip';
+
+                // Download ZIP file
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                alert(`Successfully exported ${selectedEvidence.size} evidence files with watermarks and metadata`);
+                clearSelection();
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Failed to export evidence: ' + error.message);
+            }
+        }
+
+        async function viewDownloadHistory() {
+            const historyDiv = document.getElementById('downloadHistory');
+            const contentDiv = document.getElementById('historyContent');
+            
+            if (historyDiv.style.display === 'none') {
+                try {
+                    // For demo purposes, show mock history data
+                    const mockHistory = [
+                        {
+                            timestamp: '2024-01-20T10:30:00Z',
+                            user_id: currentUser.wallet_address,
+                            action: 'evidence_download',
+                            details: { evidence_id: 1, evidence_name: 'Crime Scene Photo 1' }
+                        },
+                        {
+                            timestamp: '2024-01-19T15:45:00Z',
+                            user_id: currentUser.wallet_address,
+                            action: 'evidence_bulk_export',
+                            details: { evidence_ids: [1, 2], total_files: 2 }
+                        }
+                    ];
+
+                    contentDiv.innerHTML = mockHistory.map(entry => `
+                        <div style="border-bottom: 1px solid #ddd; padding: 10px 0;">
+                            <strong>${new Date(entry.timestamp).toLocaleString()}</strong><br>
+                            Action: ${entry.action}<br>
+                            User: ${entry.user_id.slice(0, 8)}...<br>
+                            Details: ${JSON.stringify(entry.details)}
+                        </div>
+                    `).join('');
+
+                    historyDiv.style.display = 'block';
+                } catch (error) {
+                    console.error('History error:', error);
+                    alert('Failed to load download history');
+                }
+            } else {
+                historyDiv.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
