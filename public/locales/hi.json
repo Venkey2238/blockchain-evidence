@@ -1,0 +1,111 @@
+{
+  "common": {
+    "welcome": "स्वागत",
+    "login": "लॉगिन",
+    "logout": "लॉगआउट",
+    "submit": "जमा करें",
+    "cancel": "रद्द करें",
+    "save": "सेव करें",
+    "delete": "हटाएं",
+    "edit": "संपादित करें",
+    "search": "खोजें",
+    "filter": "फिल्टर",
+    "loading": "लोड हो रहा है...",
+    "error": "त्रुटि",
+    "success": "सफलता",
+    "warning": "चेतावनी",
+    "info": "जानकारी"
+  },
+  "navigation": {
+    "dashboard": "डैशबोर्ड",
+    "evidence": "साक्ष्य",
+    "cases": "मामले",
+    "users": "उपयोगकर्ता",
+    "settings": "सेटिंग्स",
+    "profile": "प्रोफाइल",
+    "admin": "एडमिन पैनल",
+    "audit": "ऑडिट ट्रेल",
+    "reports": "रिपोर्ट्स"
+  },
+  "auth": {
+    "connect_wallet": "वॉलेट कनेक्ट करें",
+    "wallet_connected": "वॉलेट कनेक्ट हो गया",
+    "wallet_address": "वॉलेट पता",
+    "full_name": "पूरा नाम",
+    "role": "भूमिका",
+    "department": "विभाग",
+    "jurisdiction": "क्षेत्राधिकार",
+    "badge_number": "बैज नंबर"
+  },
+  "evidence": {
+    "title": "साक्ष्य प्रबंधन",
+    "upload": "साक्ष्य अपलोड करें",
+    "view": "साक्ष्य देखें",
+    "download": "डाउनलोड",
+    "verify": "सत्यापित करें",
+    "case_number": "केस नंबर",
+    "evidence_type": "साक्ष्य प्रकार",
+    "description": "विवरण",
+    "file_name": "फाइल का नाम",
+    "file_size": "फाइल का आकार",
+    "hash": "हैश",
+    "timestamp": "समय मुहर",
+    "submitted_by": "द्वारा प्रस्तुत",
+    "status": "स्थिति",
+    "blockchain_verified": "ब्लॉकचेन सत्यापित"
+  },
+  "retention": {
+    "title": "प्रतिधारण नीति प्रबंधन",
+    "policy_name": "नीति का नाम",
+    "case_type": "केस प्रकार",
+    "retention_days": "प्रतिधारण दिन",
+    "archive_method": "संग्रह विधि",
+    "jurisdiction": "क्षेत्राधिकार",
+    "law_reference": "कानून संदर्भ",
+    "expiry_date": "समाप्ति तिथि",
+    "legal_hold": "कानूनी रोक",
+    "expired": "समाप्त",
+    "expiring_soon": "जल्द समाप्त",
+    "active": "सक्रिय"
+  },
+  "verification": {
+    "title": "साक्ष्य अखंडता सत्यापन",
+    "upload_file": "सत्यापन के लिए फाइल अपलोड करें",
+    "verification_result": "सत्यापन परिणाम",
+    "verified": "सत्यापित ✅",
+    "tampered": "छेड़छाड़ ❌",
+    "hash_match": "हैश मैच",
+    "hash_mismatch": "हैश मिसमैच",
+    "generate_certificate": "प्रमाणपत्र जेनरेट करें",
+    "qr_code": "QR कोड"
+  },
+  "timeline": {
+    "title": "केस साक्ष्य टाइमलाइन",
+    "zoom_in": "ज़ूम इन",
+    "zoom_out": "ज़ूम आउट",
+    "reset_zoom": "ज़ूम रीसेट",
+    "filter_by_type": "प्रकार से फिल्टर",
+    "filter_by_date": "तारीख से फिल्टर",
+    "export_timeline": "टाइमलाइन एक्सपोर्ट",
+    "fullscreen": "फुलस्क्रीन"
+  },
+  "roles": {
+    "public_viewer": "सार्वजनिक दर्शक",
+    "investigator": "अन्वेषक",
+    "forensic_analyst": "फोरेंसिक विश्लेषक",
+    "legal_professional": "कानूनी पेशेवर",
+    "court_official": "न्यायालय अधिकारी",
+    "evidence_manager": "साक्ष्य प्रबंधक",
+    "auditor": "लेखा परीक्षक",
+    "admin": "प्रशासक"
+  },
+  "messages": {
+    "evidence_uploaded": "साक्ष्य सफलतापूर्वक अपलोड हुआ",
+    "evidence_verified": "साक्ष्य सफलतापूर्वक सत्यापित",
+    "policy_created": "प्रतिधारण नीति सफलतापूर्वक बनाई गई",
+    "legal_hold_set": "कानूनी रोक सफलतापूर्वक सेट",
+    "verification_complete": "सत्यापन पूर्ण",
+    "timeline_exported": "टाइमलाइन सफलतापूर्वक एक्सपोर्ट",
+    "language_changed": "भाषा सफलतापूर्वक बदली गई"
+  }
+}

@@ -1,0 +1,107 @@
+/* Multi-language support styles */
+.language-switcher {
+    position: relative;
+    display: inline-block;
+    margin-left: 15px;
+}
+
+.language-switcher select {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    min-width: 120px;
+}
+
+.language-switcher select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* RTL Support */
+[dir="rtl"] {
+    text-align: right;
+}
+
+[dir="rtl"] .container {
+    direction: rtl;
+}
+
+[dir="rtl"] .btn {
+    margin-left: 0;
+    margin-right: 10px;
+}
+
+[dir="rtl"] .form-group {
+    text-align: right;
+}
+
+[dir="rtl"] .modal {
+    direction: rtl;
+}
+
+[dir="rtl"] .language-switcher {
+    margin-left: 0;
+    margin-right: 15px;
+}
+
+/* Language-specific fonts */
+[lang="hi"] {
+    font-family: 'Noto Sans Devanagari', 'Arial Unicode MS', sans-serif;
+}
+
+[lang="mr"] {
+    font-family: 'Noto Sans Devanagari', 'Arial Unicode MS', sans-serif;
+}
+
+[lang="gu"] {
+    font-family: 'Noto Sans Gujarati', 'Arial Unicode MS', sans-serif;
+}
+
+[lang="ta"] {
+    font-family: 'Noto Sans Tamil', 'Arial Unicode MS', sans-serif;
+}
+
+[lang="bn"] {
+    font-family: 'Noto Sans Bengali', 'Arial Unicode MS', sans-serif;
+}
+
+/* Responsive language switcher */
+@media (max-width: 768px) {
+    .language-switcher {
+        margin: 10px 0;
+        width: 100%;
+    }
+    
+    .language-switcher select {
+        width: 100%;
+    }
+}
+
+/* Loading state for language switching */
+.language-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.language-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

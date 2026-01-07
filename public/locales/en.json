@@ -1,0 +1,111 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "login": "Login",
+    "logout": "Logout",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "filter": "Filter",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "evidence": "Evidence",
+    "cases": "Cases",
+    "users": "Users",
+    "settings": "Settings",
+    "profile": "Profile",
+    "admin": "Admin Panel",
+    "audit": "Audit Trail",
+    "reports": "Reports"
+  },
+  "auth": {
+    "connect_wallet": "Connect Wallet",
+    "wallet_connected": "Wallet Connected",
+    "wallet_address": "Wallet Address",
+    "full_name": "Full Name",
+    "role": "Role",
+    "department": "Department",
+    "jurisdiction": "Jurisdiction",
+    "badge_number": "Badge Number"
+  },
+  "evidence": {
+    "title": "Evidence Management",
+    "upload": "Upload Evidence",
+    "view": "View Evidence",
+    "download": "Download",
+    "verify": "Verify",
+    "case_number": "Case Number",
+    "evidence_type": "Evidence Type",
+    "description": "Description",
+    "file_name": "File Name",
+    "file_size": "File Size",
+    "hash": "Hash",
+    "timestamp": "Timestamp",
+    "submitted_by": "Submitted By",
+    "status": "Status",
+    "blockchain_verified": "Blockchain Verified"
+  },
+  "retention": {
+    "title": "Retention Policy Management",
+    "policy_name": "Policy Name",
+    "case_type": "Case Type",
+    "retention_days": "Retention Days",
+    "archive_method": "Archive Method",
+    "jurisdiction": "Jurisdiction",
+    "law_reference": "Law Reference",
+    "expiry_date": "Expiry Date",
+    "legal_hold": "Legal Hold",
+    "expired": "Expired",
+    "expiring_soon": "Expiring Soon",
+    "active": "Active"
+  },
+  "verification": {
+    "title": "Evidence Integrity Verification",
+    "upload_file": "Upload File to Verify",
+    "verification_result": "Verification Result",
+    "verified": "Verified ✅",
+    "tampered": "Tampered ❌",
+    "hash_match": "Hash Match",
+    "hash_mismatch": "Hash Mismatch",
+    "generate_certificate": "Generate Certificate",
+    "qr_code": "QR Code"
+  },
+  "timeline": {
+    "title": "Case Evidence Timeline",
+    "zoom_in": "Zoom In",
+    "zoom_out": "Zoom Out",
+    "reset_zoom": "Reset Zoom",
+    "filter_by_type": "Filter by Type",
+    "filter_by_date": "Filter by Date",
+    "export_timeline": "Export Timeline",
+    "fullscreen": "Fullscreen"
+  },
+  "roles": {
+    "public_viewer": "Public Viewer",
+    "investigator": "Investigator",
+    "forensic_analyst": "Forensic Analyst",
+    "legal_professional": "Legal Professional",
+    "court_official": "Court Official",
+    "evidence_manager": "Evidence Manager",
+    "auditor": "Auditor",
+    "admin": "Administrator"
+  },
+  "messages": {
+    "evidence_uploaded": "Evidence uploaded successfully",
+    "evidence_verified": "Evidence verified successfully",
+    "policy_created": "Retention policy created successfully",
+    "legal_hold_set": "Legal hold set successfully",
+    "verification_complete": "Verification completed",
+    "timeline_exported": "Timeline exported successfully",
+    "language_changed": "Language changed successfully"
+  }
+}
