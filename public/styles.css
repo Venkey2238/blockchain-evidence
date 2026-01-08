@@ -147,7 +147,7 @@ body {
 
 .hero-description {
     font-size: clamp(1rem, 2.5vw, 1.25rem);
-    color: var(--text-muted);
+    color: #5A5A5A;
     margin-bottom: 48px;
     line-height: 1.7;
     max-width: 700px;
