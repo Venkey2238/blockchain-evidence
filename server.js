@@ -1743,6 +1743,173 @@ app.get('/api/evidence/:id/blockchain-proof', async (req, res) => {
     }
 });
 
+// Role Change Approval API Endpoints
+
+// Request role change (Admin only)
+app.post('/api/admin/role-change-request', adminLimiter, verifyAdmin, async (req, res) => {
+    try {
+        const { adminWallet, targetWallet, newRole, reason } = req.body;
+
+        if (!validateWalletAddress(targetWallet) || !allowedRoles.includes(newRole)) {
+            return res.status(400).json({ error: 'Invalid target wallet or role' });
+        }
+
+        if (adminWallet === targetWallet) {
+            return res.status(400).json({ error: 'Cannot change own role' });
+        }
+
+        const { data: targetUser } = await supabase
+            .from('users')
+            .select('*')
+            .eq('wallet_address', targetWallet)
+            .single();
+
+        if (!targetUser) {
+            return res.status(404).json({ error: 'Target user not found' });
+        }
+
+        const { data: request, error } = await supabase
+            .from('role_change_requests')
+            .insert({
+                requesting_admin: adminWallet,
+                target_wallet: targetWallet,
+                old_role: targetUser.role,
+                new_role: newRole,
+                reason: reason || '',
+                status: 'pending'
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        res.json({ success: true, request });
+    } catch (error) {
+        console.error('Role change request error:', error);
+        res.status(500).json({ error: 'Failed to create role change request' });
+    }
+});
+
+// Get pending role change requests
+app.get('/api/admin/role-change-requests', adminLimiter, async (req, res) => {
+    try {
+        const { adminWallet } = req.query;
+
+        if (!validateWalletAddress(adminWallet)) {
+            return res.status(400).json({ error: 'Invalid admin wallet' });
+        }
+
+        const { data: requests, error } = await supabase
+            .from('role_change_requests')
+            .select('*')
+            .eq('status', 'pending')
+            .neq('requesting_admin', adminWallet)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        res.json({ success: true, requests });
+    } catch (error) {
+        console.error('Get role change requests error:', error);
+        res.status(500).json({ error: 'Failed to get role change requests' });
+    }
+});
+
+// Approve role change request
+app.post('/api/admin/role-change-approve', adminLimiter, verifyAdmin, async (req, res) => {
+    try {
+        const { adminWallet, requestId } = req.body;
+
+        const { data: request } = await supabase
+            .from('role_change_requests')
+            .select('*')
+            .eq('id', requestId)
+            .eq('status', 'pending')
+            .single();
+
+        if (!request) {
+            return res.status(404).json({ error: 'Request not found or already processed' });
+        }
+
+        if (request.requesting_admin === adminWallet) {
+            return res.status(400).json({ error: 'Cannot approve own request' });
+        }
+
+        // Update user role
+        const { error: userError } = await supabase
+            .from('users')
+            .update({ role: request.new_role })
+            .eq('wallet_address', request.target_wallet);
+
+        if (userError) throw userError;
+
+        // Update request status
+        const { error: requestError } = await supabase
+            .from('role_change_requests')
+            .update({
+                status: 'approved',
+                approved_by: adminWallet,
+                approved_at: new Date().toISOString()
+            })
+            .eq('id', requestId);
+
+        if (requestError) throw requestError;
+
+        await logAdminAction(adminWallet, 'role_change_approved', request.target_wallet, {
+            old_role: request.old_role,
+            new_role: request.new_role,
+            request_id: requestId
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Approve role change error:', error);
+        res.status(500).json({ error: 'Failed to approve role change' });
+    }
+});
+
+// Reject role change request
+app.post('/api/admin/role-change-reject', adminLimiter, verifyAdmin, async (req, res) => {
+    try {
+        const { adminWallet, requestId, reason } = req.body;
+
+        const { data: request } = await supabase
+            .from('role_change_requests')
+            .select('*')
+            .eq('id', requestId)
+            .eq('status', 'pending')
+            .single();
+
+        if (!request) {
+            return res.status(404).json({ error: 'Request not found or already processed' });
+        }
+
+        const { error } = await supabase
+            .from('role_change_requests')
+            .update({
+                status: 'rejected',
+                rejected_by: adminWallet,
+                rejected_at: new Date().toISOString(),
+                rejection_reason: reason || ''
+            })
+            .eq('id', requestId);
+
+        if (error) throw error;
+
+        await logAdminAction(adminWallet, 'role_change_rejected', request.target_wallet, {
+            old_role: request.old_role,
+            new_role: request.new_role,
+            request_id: requestId,
+            reason
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Reject role change error:', error);
+        res.status(500).json({ error: 'Failed to reject role change' });
+    }
+});
+
 // Prevent user self-deletion
 app.post('/api/user/delete-self', (req, res) => {
     res.status(403).json({

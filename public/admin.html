@@ -14,6 +14,7 @@
     <script src="simple-notifications.js"></script>
     <script src="indian-apis.js"></script>
     <script src="fixed-navbar.js"></script>
+    <script src="role-change-approval.js"></script>
 </head>
 
 <body>
@@ -175,6 +176,9 @@
             </div>
         </div>
 
+        <!-- Role Change Approval -->
+        <div id="pending-requests"></div>
+
         <!-- User Management -->
         <div class="admin-section card">
             <div class="card-header">
@@ -224,6 +228,7 @@
             await loadSystemOverview();
             await loadAllUsers();
             await loadRoleTestingDashboard();
+            await loadPendingRoleRequests();
             initializeEventListeners();
             
             // Test notification after everything loads
@@ -577,9 +582,10 @@
                         <td>${user.account_type === 'test' ? 'Test' : 'Real'}</td>
                         <td>${user.is_active ? 'Active' : 'Inactive'}</td>
                         <td>${new Date(user.created_at).toLocaleDateString()}</td>
-                        <td>
+                                <td>
                             ${user.is_active && user.wallet_address !== currentAdmin ?
-                        `<button class="btn btn-sm btn-danger" onclick="deleteUser('${user.wallet_address}')">Delete</button>` :
+                        `<button class="btn btn-sm btn-danger" onclick="deleteUser('${user.wallet_address}')">Delete</button>
+                         <button class="btn btn-sm btn-warning" onclick="requestRoleChange('${user.wallet_address}', '${user.role}')">Change Role</button>` :
                         user.wallet_address === currentAdmin ? '<span class="text-muted">Self</span>' : '<span class="text-muted">Deleted</span>'
                     }
                         </td>
@@ -682,6 +688,34 @@
 
         function resetUserForm() {
             document.getElementById('createUserForm').reset();
+        }
+
+        // Role Change Functions
+        async function requestRoleChange(targetWallet, currentRole) {
+            const roles = ['public_viewer', 'investigator', 'forensic_analyst', 'legal_professional', 'court_official', 'evidence_manager', 'auditor', 'admin'];
+            const roleNames = roles.map(r => r.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '));
+            
+            let options = roles.map((role, i) => 
+                role !== currentRole ? `<option value="${role}">${roleNames[i]}</option>` : ''
+            ).join('');
+            
+            const newRole = prompt(`Select new role for ${targetWallet.substring(0, 8)}...:\n\n${roleNames.join('\n')}\n\nEnter role:`);
+            if (!newRole || !roles.includes(newRole)) return;
+            
+            const reason = prompt('Reason for role change (optional):') || '';
+            
+            try {
+                await window.roleChangeApproval.requestRoleChange(targetWallet, newRole, reason);
+                showAlert('Role change request submitted for approval', 'success');
+                await loadPendingRoleRequests();
+            } catch (error) {
+                showAlert('Error: ' + error.message, 'error');
+            }
+        }
+        
+        async function loadPendingRoleRequests() {
+            const container = document.getElementById('pending-requests');
+            await window.roleChangeApproval.renderPendingPanel(container);
         }
 
         function logout() {
