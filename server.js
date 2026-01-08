@@ -287,6 +287,11 @@ app.get('/data-protection', policyPageLimiter, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'data-protection.html'));
 });
 
+// Public demo case route
+app.get('/demo-case', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'demo-case.html'));
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
