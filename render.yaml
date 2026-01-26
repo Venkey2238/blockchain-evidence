@@ -1,49 +1,18 @@
 services:
-  # Main production service
   - type: web
-    name: evid-dgc-production
-    env: node
-    plan: free
-    buildCommand: npm install && npm run build
-    startCommand: npm start
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: SUPABASE_URL
-        fromDatabase:
-          name: evid-dgc-db
-          property: connectionString
-      - key: SUPABASE_KEY
-        sync: false
-    domains:
-      - evid-dgc.onrender.com
-
-  # Preview environment for pull requests
-  - type: web
-    name: evid-dgc-preview
+    name: evid-dgc
     env: node
     plan: free
     buildCommand: npm install
     startCommand: npm start
     envVars:
       - key: NODE_ENV
-        value: staging
+        value: production
+      - key: PORT
+        value: 10000
       - key: SUPABASE_URL
-        fromDatabase:
-          name: evid-dgc-preview-db
-          property: connectionString
+        sync: false
       - key: SUPABASE_KEY
         sync: false
-    previewsEnabled: true
-    previewsExpireAfterDays: 7
-
-databases:
-  - name: evid-dgc-db
-    databaseName: evid_dgc_production
-    user: evid_dgc_user
-    plan: free
-
-  - name: evid-dgc-preview-db
-    databaseName: evid_dgc_preview
-    user: evid_dgc_preview_user
-    plan: free
+      - key: ALLOWED_ORIGINS
+        sync: false
