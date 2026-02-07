@@ -218,6 +218,6 @@ This policy only covers the EVID-DGC application. Issues with third-party servic
 
 ---
 
-**Last Updated**: January 2025  
+**Last Updated**: January 2026  
 **Version**: 1.0  
-**Next Review**: July 2025
+**Next Review**: July 2026
