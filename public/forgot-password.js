@@ -7,7 +7,7 @@ class ForgotPasswordManager {
     initializeForgotPassword() {
         // Add forgot password link to login forms
         // this.addForgotPasswordLinks();
-        
+
         // Handle forgot password form submission
         const forgotForm = document.getElementById('forgotPasswordForm');
         if (forgotForm) {
@@ -38,10 +38,10 @@ class ForgotPasswordManager {
 
     async handleForgotPassword(event) {
         event.preventDefault();
-        
+
         const email = document.getElementById('forgotEmail').value;
         const submitBtn = event.target.querySelector('button[type="submit"]');
-        
+
         if (!email) {
             this.showError('Please enter your email address');
             return;
@@ -53,7 +53,7 @@ class ForgotPasswordManager {
 
             // Simulate API call (replace with actual endpoint)
             const response = await this.sendResetEmail(email);
-            
+
             if (response.success) {
                 this.showSuccess('Password reset email sent! Check your inbox.');
                 document.getElementById('forgotPasswordModal').classList.remove('active');
@@ -70,11 +70,11 @@ class ForgotPasswordManager {
 
     async handleResetPassword(event) {
         event.preventDefault();
-        
+
         const newPassword = document.getElementById('newPassword').value;
         const confirmPassword = document.getElementById('confirmNewPassword').value;
         const token = this.getResetTokenFromURL();
-        
+
         if (!newPassword || !confirmPassword) {
             this.showError('Please fill in all fields');
             return;
@@ -92,7 +92,7 @@ class ForgotPasswordManager {
 
         try {
             const response = await this.resetPassword(token, newPassword);
-            
+
             if (response.success) {
                 this.showSuccess('Password reset successful! You can now login.');
                 setTimeout(() => {
@@ -122,10 +122,10 @@ class ForgotPasswordManager {
                         expires: Date.now() + (15 * 60 * 1000) // 15 minutes
                     };
                     localStorage.setItem('resetToken_' + resetToken, JSON.stringify(resetData));
-                    
+
                     // In production, send actual email here
                     console.log(`Reset link: ${window.location.origin}/reset-password.html?token=${resetToken}`);
-                    
+
                     resolve({ success: true });
                 } else {
                     resolve({ success: false, error: 'Email not found' });
@@ -156,10 +156,10 @@ class ForgotPasswordManager {
                     const user = JSON.parse(userData);
                     user.password = newPassword;
                     localStorage.setItem('emailUser_' + data.email, JSON.stringify(user));
-                    
+
                     // Remove reset token
                     localStorage.removeItem('resetToken_' + token);
-                    
+
                     resolve({ success: true });
                 } else {
                     resolve({ success: false, error: 'User not found' });
@@ -197,15 +197,19 @@ class ForgotPasswordManager {
 // Global functions for modal management
 function showForgotPasswordModal() {
     document.getElementById('forgotPasswordModal').classList.add('active');
+    if (typeof toggleScroll === 'function') toggleScroll(false);
+    else document.body.classList.add('modal-open');
     document.getElementById('forgotEmail').focus();
 }
 
 function closeForgotPasswordModal() {
     document.getElementById('forgotPasswordModal').classList.remove('active');
+    if (typeof toggleScroll === 'function') toggleScroll(true);
+    else document.body.classList.remove('modal-open');
 }
 
 // Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     new ForgotPasswordManager();
 });
 

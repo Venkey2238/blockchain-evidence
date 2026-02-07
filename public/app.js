@@ -83,11 +83,26 @@ function scrollToTop() {
 function scrollToSection(sectionId) {
   const element = document.getElementById(sectionId);
   if (element) {
-    if(lenis){
-        lenis.scrollTo(element);
-    }else{
-        element.scrollIntoView({behavior:"smooth",block:"start"})
+    if (lenis) {
+      lenis.scrollTo(element);
+    } else {
+      element.scrollIntoView({ behavior: "smooth", block: "start" })
     }
+  }
+}
+
+// Helper to toggle scroll state
+function toggleScroll(enable) {
+  if (enable) {
+    document.body.classList.remove('modal-open');
+    // We don't need to stop/start lenis if we use data-lenis-prevent
+    // but stopping it ensures background doesn't move at all
+    // however, stopping it might freeze standard scroll if not handled rights
+    // Let's try JUST using body class + overscroll-behavior
+    if (lenis) lenis.start();
+  } else {
+    document.body.classList.add('modal-open');
+    if (lenis) lenis.stop(); // Stop Lenis to freeze background
   }
 }
 
@@ -97,6 +112,7 @@ function showEmailLogin() {
   const modal = document.getElementById("emailLoginModal");
   if (modal) {
     modal.classList.add("active");
+    toggleScroll(false);
   }
 }
 
@@ -104,6 +120,7 @@ function closeEmailLogin() {
   const modal = document.getElementById("emailLoginModal");
   if (modal) {
     modal.classList.remove("active");
+    toggleScroll(true);
   }
 }
 
@@ -111,6 +128,7 @@ function showEmailRegistration() {
   const modal = document.getElementById("emailRegistrationModal");
   if (modal) {
     modal.classList.add("active");
+    toggleScroll(false);
   }
 }
 
@@ -118,6 +136,7 @@ function closeEmailRegistration() {
   const modal = document.getElementById("emailRegistrationModal");
   if (modal) {
     modal.classList.remove("active");
+    toggleScroll(true);
   }
 }
 
@@ -267,6 +286,25 @@ function initializeEmailLogin() {
   const emailRegForm = document.getElementById("emailRegistrationForm");
   if (emailRegForm) {
     emailRegForm.addEventListener("submit", handleEmailRegistration);
+  }
+
+  // Add click outside to close for all modals
+  setupModalClickOutside('emailLoginModal', closeEmailLogin);
+  setupModalClickOutside('emailRegistrationModal', closeEmailRegistration);
+  setupModalClickOutside('forgotPasswordModal', closeForgotPasswordModal);
+  setupModalClickOutside('errorModal', closeErrorModal);
+}
+
+// Helper function to setup click outside to close modal
+function setupModalClickOutside(modalId, closeFunction) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.addEventListener('click', function (event) {
+      // Only close if clicking directly on the modal backdrop, not the content
+      if (event.target === modal) {
+        closeFunction();
+      }
+    });
   }
 }
 
@@ -736,8 +774,8 @@ function showAlert(message, type = "info") {
   alert.innerHTML = `
         <div style="display: flex; align-items: center; gap: 8px;">
             <i data-lucide="${getAlertIcon(
-              type
-            )}" style="width: 16px; height: 16px;"></i>
+    type
+  )}" style="width: 16px; height: 16px;"></i>
             <span>${message}</span>
         </div>
     `;
@@ -791,6 +829,8 @@ function showErrorModal(
       actionBtn.classList.add("hidden");
     }
     modal.classList.add("active");
+    if (typeof toggleScroll === 'function') toggleScroll(false);
+    else document.body.classList.add("modal-open");
   } else {
     showAlert(`${title}: ${description}`, "error");
   }
@@ -798,7 +838,11 @@ function showErrorModal(
 
 function closeErrorModal() {
   const modal = document.getElementById("errorModal");
-  if (modal) modal.classList.remove("active");
+  if (modal) {
+    modal.classList.remove("active");
+    if (typeof toggleScroll === 'function') toggleScroll(true);
+    else document.body.classList.remove("modal-open");
+  }
 }
 
 // Ethereum event listeners
