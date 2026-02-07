@@ -818,10 +818,18 @@ if (window.ethereum) {
 
 // Helper function to get dashboard URL based on role
 function getDashboardUrl(role) {
-  if (role === "admin") {
-    return "dashboard-admin.html";
-  }
-  return `dashboard-${role.replace("_", "-")}.html`;
+  const dashboardMap = {
+    'public_viewer': 'dashboard-public.html',
+    'investigator': 'dashboard-investigator.html',
+    'forensic_analyst': 'dashboard-analyst.html',
+    'legal_professional': 'dashboard-legal.html',
+    'court_official': 'dashboard-court.html',
+    'evidence_manager': 'dashboard-manager.html',
+    'auditor': 'dashboard-auditor.html',
+    'admin': 'admin.html'
+  };
+
+  return dashboardMap[role] || 'dashboard.html';
 }
 
 // Global exports
