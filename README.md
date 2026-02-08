@@ -113,6 +113,7 @@ The system implements 8 distinct roles to ensure strict access control:
 ## 📁 Folder Structure
 
 ```text
+blockchain-evidence/
 ├── contracts/                          # Smart contract files
 │   └── EvidenceStorage.sol            # Main evidence storage contract
 ├── docs/                              # Complete documentation
@@ -122,18 +123,134 @@ The system implements 8 distinct roles to ensure strict access control:
 │   ├── DEPLOYMENT.md                 # Production deployment guide
 │   ├── MAINTENANCE.md                # System maintenance procedures
 │   └── swagger.js                    # API documentation (OpenAPI)
-├── public/                            # Frontend application files
-│   ├── index.html                    # Main landing page
-│   ├── app.js                        # Core frontend logic
-│   ├── config.js                     # Configuration settings
-│   ├── styles.css                    # Global styling
-│   ├── admin.html                    # Administrator dashboard
-│   ├── dashboard*.html               # Role-specific dashboards (8 roles)
-│   ├── case-*.html                   # Case management interfaces
-│   ├── evidence-*.html               # Evidence management pages
-│   ├── *-manager.js                  # Feature-specific managers
-│   ├── *-styles.css                  # Component-specific styles
-│   └── *.js                          # Feature modules and utilities
+├── public/                            # Frontend application (80+ files)
+│   │
+│   ├── 🏠 Core Landing & Pages
+│   │   ├── index.html                # Main landing page with login options
+│   │   ├── app.js                    # Core frontend application logic
+│   │   ├── config.js                 # Global configuration settings
+│   │   ├── styles.css                # Global stylesheet
+│   │   ├── quickstart.html           # Quick start guide page
+│   │   ├── privacy.html              # Privacy policy page
+│   │   ├── favicon.ico               # Site favicon
+│   │   └── logo-32x32.png            # Application logo
+│   │
+│   ├── 🔐 Authentication & Security (15 files)
+│   │   ├── forgot-password.js        # Password reset functionality
+│   │   ├── reset-password.html       # Password reset page
+│   │   ├── password-security.css     # Password security styling
+│   │   ├── password-security.js      # Password policy enforcement
+│   │   ├── password-strength.js      # Password strength validator
+│   │   ├── password-policy-admin.js  # Admin password policy config
+│   │   ├── two-factor-auth.css       # 2FA styling
+│   │   ├── two-factor-auth.js        # Two-factor authentication logic
+│   │   ├── two-factor-integration.js # 2FA system integration
+│   │   ├── session-manager.js        # User session management
+│   │   ├── session-timeout.css       # Session timeout styling
+│   │   ├── session-timeout.js        # Auto-logout functionality
+│   │   ├── session-timeout-admin.js  # Admin session timeout config
+│   │   ├── comprehensive-registration.js  # Enhanced registration system
+│   │   └── storage.js                # Local storage utilities
+│   │
+│   ├── 👤 Account & User Management (5 files)
+│   │   ├── account-settings.html     # User account settings page
+│   │   ├── account-settings.js       # Account settings logic
+│   │   ├── account-settings-styles.css  # Account settings styling
+│   │   ├── profile.html              # User profile page
+│   │   └── user-roles.html           # User role information page
+│   │
+│   ├── 📊 Dashboards - Role Based (9 files)
+│   │   ├── dashboard.html            # Main dashboard (role redirect)
+│   │   ├── dashboard-navigator.js    # Dashboard navigation logic
+│   │   ├── dashboard-public.html     # Public viewer dashboard
+│   │   ├── dashboard-investigator.html  # Investigator dashboard
+│   │   ├── dashboard-analyst.html    # Forensic analyst dashboard
+│   │   ├── dashboard-legal.html      # Legal professional dashboard
+│   │   ├── dashboard-court.html      # Court official dashboard
+│   │   ├── dashboard-manager.html    # Evidence manager dashboard
+│   │   ├── dashboard-auditor.html    # Auditor dashboard
+│   │   └── admin.html                # Administrator dashboard
+│   │
+│   ├── 🗂️ Case Management (7 files)
+│   │   ├── case-management.html      # Case creation and management
+│   │   ├── cases.html                # Case listing and search
+│   │   ├── case-status-manager.js    # Case status workflow
+│   │   ├── case-status-styles.css    # Case status styling
+│   │   ├── case-timeline.html        # Case timeline visualization
+│   │   ├── case-hash-manifest.js     # Case hash tracking
+│   │   └── case-summary-exporter.js  # Case summary export
+│   │
+│   ├── 📁 Evidence Management (16 files)
+│   │   ├── evidence-manager.html     # Main evidence management
+│   │   ├── enhanced-evidence-upload.js  # Advanced upload features
+│   │   ├── enhanced-upload-styles.css   # Upload UI styling
+│   │   ├── evidence-display.css      # Evidence display styling
+│   │   ├── evidence-display.js       # Evidence display logic
+│   │   ├── evidence-preview.css      # Preview modal styling
+│   │   ├── evidence-preview.js       # Evidence preview system
+│   │   ├── evidence-preview-styles.css  # Additional preview styles
+│   │   ├── evidence-preview-system.js   # Preview system core
+│   │   ├── evidence-viewers.js       # Multi-format file viewers
+│   │   ├── evidence-comparison.css   # Comparison view styling
+│   │   ├── evidence-comparison.html  # Evidence comparison tool
+│   │   ├── evidence-comparison.js    # Comparison logic
+│   │   ├── evidence-export.html      # Evidence export page
+│   │   ├── evidence-exporter.js      # Export functionality
+│   │   ├── evidence-tagging.html     # Evidence tagging system
+│   │   ├── evidence-tagging.js       # Tag management logic
+│   │   ├── evidence-verification.html   # Evidence verification page
+│   │   ├── evidence-verification.js  # Blockchain verification
+│   │   └── tag-manager.js            # Tag CRUD operations
+│   │
+│   ├── 📜 Policy & Compliance (8 files)
+│   │   ├── retention-policy.html     # Retention policy management
+│   │   ├── retention-policy.js       # Retention policy logic
+│   │   ├── retention-policy-manager.js  # Policy enforcement
+│   │   ├── retention-policy-styles.css  # Retention policy styling
+│   │   ├── legal-hold-management.html   # Legal hold system
+│   │   ├── data-protection.html      # Data protection policies
+│   │   ├── audit-trail.html          # System audit trail viewer
+│   │   └── activity-feed-widget.js   # Activity feed component
+│   │
+│   ├── 👥 Role Management (7 files)
+│   │   ├── role-manager.js           # Role assignment logic
+│   │   ├── role-wizard.js            # Role selection wizard
+│   │   ├── role-wizard-styles.css    # Role wizard styling
+│   │   ├── role-selection-wizard.js  # Role onboarding wizard
+│   │   ├── role-landing-system.js    # Role-based landing pages
+│   │   ├── role-change-approval.js   # Role change workflow
+│   │   └── settings.html             # Role & system settings
+│   │
+│   ├── 🎨 UI/UX & Accessibility (6 files)
+│   │   ├── responsive-improvements.css  # Mobile responsive fixes
+│   │   ├── accessibility-fixes.css   # WCAG compliance fixes
+│   │   ├── accessibility-manager.js  # Accessibility features
+│   │   ├── loading-screen.css        # Loading screen styling
+│   │   ├── loading-screen.js         # Loading screen component
+│   │   ├── fixed-navbar.js           # Sticky navigation bar
+│   │   ├── navbar.js                 # Navigation logic
+│   │   ├── stability-fixes.css       # UI stability patches
+│   │   └── empty-states-system.js    # Empty state components
+│   │
+│   ├── ℹ️ Help & Support (3 files)
+│   │   ├── help-center.html          # Help center main page
+│   │   ├── help-center.js            # Help center logic
+│   │   ├── help-center-styles.css    # Help center styling
+│   │   ├── troubleshooting.html      # Troubleshooting guide
+│   │   └── api-reference.html        # API documentation page
+│   │
+│   ├── 📈 System Monitoring (3 files)
+│   │   ├── system-health.html        # System health dashboard
+│   │   ├── timeline-visualization.html  # Activity timeline view
+│   │   ├── timeline-visualization.js    # Timeline rendering
+│   │   └── notifications.js          # Real-time notifications
+│   │
+│   └── 🛠️ System Utilities (4 files)
+│       ├── enhanced-error-handling.js   # Global error handling
+│       ├── enhanced-stability.js     # Stability improvements
+│       ├── blockchain-feedback.js    # Blockchain operation feedback
+│       └── css/                      # Additional stylesheets
+│
 ├── server.js                          # Express.js backend server
 ├── complete-database-setup-fixed.sql  # Complete database schema
 ├── package.json                       # Dependencies and scripts
@@ -142,41 +259,29 @@ The system implements 8 distinct roles to ensure strict access control:
 ├── .gitignore                         # Git ignore rules
 ├── LICENSE                            # Apache 2.0 license
 ├── SECURITY.md                        # Security policy
+├── CODE_OF_CONDUCT.md                 # Community guidelines
+├── CONTRIBUTING.md                    # Contribution guidelines
 └── README.md                          # Project documentation
 ```
 
-### Key File Descriptions
+### 📝 Key File Descriptions
 
-**Core System Files:**
-- `server.js` - Express backend with Socket.IO, handles all API endpoints, authentication, file uploads
-- `public/app.js` - Main frontend application logic, handles wallet connection, user registration, navigation
-- `public/config.js` - Configuration settings for API URLs, file limits, blockchain network settings
-- `complete-database-setup-fixed.sql` - Complete PostgreSQL schema with 17+ tables, RLS policies, functions
+#### Core System Files
+- **server.js** - Express backend with Socket.IO, handles all API endpoints, authentication, file uploads, and database operations
+- **complete-database-setup-fixed.sql** - Complete PostgreSQL schema with 17+ tables, Row Level Security policies, triggers, and stored functions
+- **package.json** - Node.js dependencies (321 packages) and npm scripts for development and deployment
 
-**Frontend Pages:**
-- `public/index.html` - Landing page with login options (MetaMask/Email)
-- `public/admin.html` - Administrator dashboard for user management and system oversight
-- `public/dashboard-*.html` - Role-specific dashboards for all 8 user roles
-- `public/case-management.html` - Case creation and management interface
-- `public/evidence-*.html` - Evidence upload, viewing, comparison, and export interfaces
+#### Configuration & Environment
+- **.env.example** - Template for environment variables (Supabase URL, API keys, JWT secrets)
+- **render.yaml** - Render.com deployment configuration with build and start commands
+- **public/config.js** - Frontend configuration for API endpoints, file size limits, supported formats
 
-**Feature Modules:**
-- `public/*-manager.js` - JavaScript modules for specific features (case, evidence, role management)
-- `public/enhanced-*.js` - Enhanced functionality modules (upload, error handling, stability)
-- `public/notifications.js` - Real-time notification system
-- `public/storage.js` - Local storage management utilities
-
-**Documentation:**
-- `docs/USER_GUIDE.md` - Complete user manual with role-specific instructions
-- `docs/DEVELOPER_GUIDE.md` - Development setup, API reference, architecture guide
-- `docs/SECURITY.md` - Security implementation details and best practices
-- `docs/DEPLOYMENT.md` - Production deployment instructions for Render.com
-- `docs/MAINTENANCE.md` - System maintenance and troubleshooting procedures
-
-**Configuration:**
-- `.env.example` - Template for environment variables (Supabase credentials, etc.)
-- `render.yaml` - Render.com deployment configuration
-- `package.json` - Node.js dependencies and npm scripts
+#### Documentation (docs/)
+- **USER_GUIDE.md** - Complete user manual with role-specific instructions and workflows
+- **DEVELOPER_GUIDE.md** - Development setup, architecture overview, API reference, and contribution guide
+- **SECURITY.md** - Security implementation details, best practices, and vulnerability reporting
+- **DEPLOYMENT.md** - Production deployment instructions for Render, Vercel, and Netlify
+- **MAINTENANCE.md** - System maintenance procedures, backup strategies, and troubleshooting
 
 ---
 

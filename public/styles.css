@@ -244,6 +244,12 @@ body {
     background: var(--primary-red-dark);
 }
 
+.nav-btn-compact {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    gap: 6px;
+}
+
 .menu-toggle {
     display: none;
     background: none;
@@ -634,6 +640,42 @@ body {
 
 .form-control:hover {
     border-color: var(--primary-red-light);
+}
+
+/* Password Toggle Styles */
+.password-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-wrapper .form-control {
+    padding-right: 50px;
+}
+
+.password-toggle-btn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    border-radius: 6px;
+}
+
+.password-toggle-btn:hover {
+    color: var(--primary-red);
+    background: var(--primary-red-light);
+}
+
+.password-toggle-btn i {
+    width: 20px;
+    height: 20px;
 }
 
 .form-actions {

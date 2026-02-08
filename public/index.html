@@ -9,11 +9,12 @@
         content="Professional blockchain evidence management for law enforcement, forensic analysts, and legal professionals.">
     <link rel="stylesheet" href="loading-screen.css">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="responsive-improvements.css">
     <link rel="stylesheet" href="password-security.css">
     <link rel="stylesheet" href="css/latest-release.css">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="icon" sizes="32x32" href="logo-32x32.png" type="image/png">
-    <script src="loading-screen.js" ></script> 
+    <script src="loading-screen.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <script src="config.js"></script>
     <script src="password-strength.js"></script>
@@ -134,9 +135,18 @@
                     <i data-lucide="github"></i>
                     <span>GitHub</span>
                 </a>
-                <button class="nav-login-btn" onclick="scrollToSection('login-options')">
+                <button id="navLoginBtn" class="nav-login-btn" onclick="scrollToSection('login-options')">
                     <i data-lucide="log-in"></i>
                     <span>Login</span>
+                </button>
+                <button id="navDashboardBtn" class="nav-login-btn nav-btn-compact hidden" onclick="goToDashboard()">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button id="navLogoutBtn" class="nav-login-btn nav-btn-compact btn-outline hidden" onclick="logout()"
+                    style="border: 1px solid var(--primary-red); color: var(--primary-red); background: transparent;">
+                    <i data-lucide="log-out"></i>
+                    <span>Logout</span>
                 </button>
             </nav>
         </div>
@@ -722,8 +732,14 @@
                         <i data-lucide="lock"></i>
                         Password
                     </label>
-                    <input type="password" id="loginPassword" class="form-control" placeholder="Enter your password"
-                        required>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="loginPassword" class="form-control" placeholder="Enter your password"
+                            required>
+                        <button type="button" class="password-toggle-btn"
+                            onclick="togglePasswordVisibility('loginPassword')" aria-label="Toggle password visibility">
+                            <i data-lucide="eye"></i>
+                        </button>
+                    </div>
                 </div>
                 <!-- Forgot Password Link -->
                 <div class="text-right mb-4" style="text-align: right; margin-bottom: 1rem;">
@@ -802,8 +818,14 @@
                         <i data-lucide="lock"></i>
                         Password
                     </label>
-                    <input type="password" id="regPassword" class="form-control" placeholder="Create a password"
-                        required>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="regPassword" class="form-control" placeholder="Create a password"
+                            required>
+                        <button type="button" class="password-toggle-btn"
+                            onclick="togglePasswordVisibility('regPassword')" aria-label="Toggle password visibility">
+                            <i data-lucide="eye"></i>
+                        </button>
+                    </div>
                     <div id="regPasswordStrength" class="password-strength">
                         <div class="strength-meter">
                             <div class="strength-fill"></div>
@@ -816,8 +838,15 @@
                         <i data-lucide="lock"></i>
                         Confirm Password
                     </label>
-                    <input type="password" id="regConfirmPassword" class="form-control"
-                        placeholder="Confirm your password" required>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="regConfirmPassword" class="form-control"
+                            placeholder="Confirm your password" required>
+                        <button type="button" class="password-toggle-btn"
+                            onclick="togglePasswordVisibility('regConfirmPassword')"
+                            aria-label="Toggle password visibility">
+                            <i data-lucide="eye"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="regFullName">

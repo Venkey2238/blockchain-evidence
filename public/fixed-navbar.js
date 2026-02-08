@@ -363,10 +363,10 @@ class FixedNavbarManager {
                 { label: 'Compliance', icon: 'check-square', href: 'compliance.html' }
             ],
             'public_viewer': [
-                { label: 'Dashboard', icon: 'home', href: 'dashboard-public.html' },
-                { label: 'Cases', icon: 'folder', href: 'cases-public.html' }
-                // TODO: Add search functionality - feature not yet implemented
-            ]
+  { label: 'Dashboard', icon: 'home', href: 'dashboard-public.html' },
+  { label: 'Cases', icon: 'folder', href: 'cases-public.html' }
+  // TODO: Add search functionality - feature not yet implemented
+],
         };
 
         // Handle numeric roles
