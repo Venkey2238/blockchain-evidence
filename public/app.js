@@ -48,6 +48,7 @@ function initializeApp() {
     initializeParticles();
     initializeFAQ();
     initializeEmailLogin();
+    updateNavbarAuth();
 
     // Add click handler for wallet connection
     const connectBtn = document.getElementById("connectWallet");
@@ -187,6 +188,7 @@ async function handleEmailLogin(event) {
         displayUserInfo(data.user);
         toggleSections("alreadyRegistered");
       }
+      updateNavbarAuth();
     } else {
       showAlert(data.error || "Login failed", "error");
     }
@@ -480,6 +482,7 @@ async function checkRegistrationStatus() {
       } else {
         toggleSections("alreadyRegistered");
       }
+      updateNavbarAuth();
     } else {
       console.log("No existing user found, showing registration");
       toggleSections("registration");
@@ -520,6 +523,35 @@ function displayUserInfo(userData) {
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
     userRoleName.textContent = roleName;
+  }
+}
+
+function updateNavbarAuth() {
+  const loginBtn = document.getElementById('navLoginBtn');
+  const dashboardBtn = document.getElementById('navDashboardBtn');
+  const logoutBtn = document.getElementById('navLogoutBtn');
+
+  if (!loginBtn || !dashboardBtn || !logoutBtn) return;
+
+  const currentUser = localStorage.getItem('currentUser');
+
+  if (currentUser) {
+    loginBtn.classList.add('hidden');
+    dashboardBtn.classList.remove('hidden');
+    logoutBtn.classList.remove('hidden');
+
+    // Ensure buttons have correct display style since valid-hidden might enforce display:none
+    dashboardBtn.style.display = 'inline-flex';
+    logoutBtn.style.display = 'inline-flex';
+    loginBtn.style.display = 'none';
+  } else {
+    loginBtn.classList.remove('hidden');
+    dashboardBtn.classList.add('hidden');
+    logoutBtn.classList.add('hidden');
+
+    loginBtn.style.display = 'inline-flex';
+    dashboardBtn.style.display = 'none';
+    logoutBtn.style.display = 'none';
   }
 }
 
@@ -602,6 +634,7 @@ async function handleRegistration(event) {
       setTimeout(() => {
         window.location.href = getDashboardUrl(data.user.role);
       }, 2000);
+      updateNavbarAuth();
     } else {
       showAlert(data.error || "Registration failed", "error");
     }
@@ -638,6 +671,7 @@ function logout() {
   }
 
   initializeSections();
+  updateNavbarAuth();
   showAlert("Logged out successfully", "info");
 }
 
@@ -657,6 +691,7 @@ function disconnectWallet() {
   }
 
   initializeSections();
+  updateNavbarAuth();
   showAlert("Wallet disconnected successfully", "info");
 }
 

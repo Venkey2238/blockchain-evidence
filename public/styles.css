@@ -244,6 +244,12 @@ body {
     background: var(--primary-red-dark);
 }
 
+.nav-btn-compact {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    gap: 6px;
+}
+
 .menu-toggle {
     display: none;
     background: none;

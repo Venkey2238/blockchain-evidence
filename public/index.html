@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="css/latest-release.css">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="icon" sizes="32x32" href="logo-32x32.png" type="image/png">
-    <script src="loading-screen.js" ></script> 
+    <script src="loading-screen.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <script src="config.js"></script>
     <script src="password-strength.js"></script>
@@ -135,9 +135,18 @@
                     <i data-lucide="github"></i>
                     <span>GitHub</span>
                 </a>
-                <button class="nav-login-btn" onclick="scrollToSection('login-options')">
+                <button id="navLoginBtn" class="nav-login-btn" onclick="scrollToSection('login-options')">
                     <i data-lucide="log-in"></i>
                     <span>Login</span>
+                </button>
+                <button id="navDashboardBtn" class="nav-login-btn nav-btn-compact hidden" onclick="goToDashboard()">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button id="navLogoutBtn" class="nav-login-btn nav-btn-compact btn-outline hidden" onclick="logout()"
+                    style="border: 1px solid var(--primary-red); color: var(--primary-red); background: transparent;">
+                    <i data-lucide="log-out"></i>
+                    <span>Logout</span>
                 </button>
             </nav>
         </div>
