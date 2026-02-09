@@ -120,7 +120,7 @@
         }
 
         .evidence-item:hover {
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
@@ -185,8 +185,10 @@
                         <p><strong>Date:</strong> February 15, 2024</p>
                         <p><strong>Status:</strong> Investigation Complete</p>
                         <div style="margin-top: 15px;">
-                            <button class="btn btn-sm btn-outline" onclick="viewCaseSummary('PUB-2024-001')">View Summary</button>
-                            <button class="btn btn-sm btn-outline" onclick="viewEvidenceList('PUB-2024-001')">Evidence List</button>
+                            <button class="btn btn-sm btn-outline" onclick="viewCaseSummary('PUB-2024-001')">View
+                                Summary</button>
+                            <button class="btn btn-sm btn-outline" onclick="viewEvidenceList('PUB-2024-001')">Evidence
+                                List</button>
                         </div>
                     </div>
 
@@ -201,8 +203,10 @@
                         <p><strong>Date:</strong> February 20, 2024</p>
                         <p><strong>Status:</strong> Resolved</p>
                         <div style="margin-top: 15px;">
-                            <button class="btn btn-sm btn-outline" onclick="viewCaseSummary('PUB-2024-002')">View Summary</button>
-                            <button class="btn btn-sm btn-outline" onclick="viewEvidenceList('PUB-2024-002')">Evidence List</button>
+                            <button class="btn btn-sm btn-outline" onclick="viewCaseSummary('PUB-2024-002')">View
+                                Summary</button>
+                            <button class="btn btn-sm btn-outline" onclick="viewEvidenceList('PUB-2024-002')">Evidence
+                                List</button>
                         </div>
                     </div>
 
@@ -217,8 +221,10 @@
                         <p><strong>Date:</strong> February 25, 2024</p>
                         <p><strong>Status:</strong> Case Closed</p>
                         <div style="margin-top: 15px;">
-                            <button class="btn btn-sm btn-outline" onclick="viewCaseSummary('PUB-2024-003')">View Summary</button>
-                            <button class="btn btn-sm btn-outline" onclick="viewEvidenceList('PUB-2024-003')">Evidence List</button>
+                            <button class="btn btn-sm btn-outline" onclick="viewCaseSummary('PUB-2024-003')">View
+                                Summary</button>
+                            <button class="btn btn-sm btn-outline" onclick="viewEvidenceList('PUB-2024-003')">Evidence
+                                List</button>
                         </div>
                     </div>
                 </div>
@@ -296,14 +302,36 @@
 
         async function initializeDashboard() {
             try {
-                const userAccount = localStorage.getItem('currentUser');
-                if (!userAccount) {
+                const currentUserRaw = localStorage.getItem('currentUser');
+                if (!currentUserRaw) {
                     window.location.href = 'index.html';
                     return;
                 }
 
-                // Get user data from localStorage
-                let userData = JSON.parse(localStorage.getItem('evidUser_' + userAccount) || '{}');
+                let userAccount = currentUserRaw;
+                let userData = {};
+
+                // Parse if it's a JSON object (new format)
+                if (currentUserRaw.startsWith('{')) {
+                    try {
+                        const parsed = JSON.parse(currentUserRaw);
+                        userData = parsed.user;
+                        // Map fields if necessary
+                        if (!userData.role) userData.role = parsed.user.role;
+
+                        // Set userAccount for legacy lookups if needed (though we have userData now)
+                        if (parsed.type === 'email') {
+                            userAccount = userData.email;
+                        } else {
+                            userAccount = userData.walletAddress || userData.address;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing currentUser:', e);
+                    }
+                } else {
+                    // Legacy
+                    userData = JSON.parse(localStorage.getItem('evidUser_' + userAccount) || '{}');
+                }
 
                 if (!userData.role) {
                     // Try to get role from selectedRole if user data is missing
@@ -334,7 +362,7 @@
 
         function initializeTabs() {
             // Add click handlers for tab navigation
-            document.addEventListener('click', function(e) {
+            document.addEventListener('click', function (e) {
                 if (e.target.matches('[data-tab]')) {
                     e.preventDefault();
                     const tabName = e.target.getAttribute('data-tab');
@@ -345,8 +373,8 @@
 
         function switchTab(tabName) {
             console.log('Switching to tab:', tabName);
-            
-            switch(tabName) {
+
+            switch (tabName) {
                 case 'cases':
                     window.location.href = 'cases.html';
                     break;
@@ -400,36 +428,36 @@
             const searchTerm = document.getElementById('searchTerm').value.toLowerCase();
             const searchType = document.getElementById('searchType').value;
             const resultsDiv = document.getElementById('searchResults');
-            
+
             if (!searchTerm.trim()) {
                 resultsDiv.innerHTML = '<p class="text-warning">Please enter a search term.</p>';
                 return;
             }
-            
+
             const cases = JSON.parse(localStorage.getItem('cases') || '[]');
             const evidence = JSON.parse(localStorage.getItem('evidence') || '[]');
-            
+
             let results = [];
-            
+
             if (searchType === 'all' || searchType === 'cases') {
-                const caseResults = cases.filter(c => 
+                const caseResults = cases.filter(c =>
                     (c.status === 'CLOSED' || c.isPublic) &&
                     (c.id.toLowerCase().includes(searchTerm) ||
-                     c.title.toLowerCase().includes(searchTerm) ||
-                     c.location?.toLowerCase().includes(searchTerm))
-                ).map(c => ({...c, type: 'case'}));
+                        c.title.toLowerCase().includes(searchTerm) ||
+                        c.location?.toLowerCase().includes(searchTerm))
+                ).map(c => ({ ...c, type: 'case' }));
                 results = results.concat(caseResults);
             }
-            
+
             if (searchType === 'all' || searchType === 'evidence') {
-                const evidenceResults = evidence.filter(e => 
+                const evidenceResults = evidence.filter(e =>
                     (e.isPublic || e.status === 'Verified') &&
                     (e.title.toLowerCase().includes(searchTerm) ||
-                     e.description?.toLowerCase().includes(searchTerm))
-                ).map(e => ({...e, type: 'evidence'}));
+                        e.description?.toLowerCase().includes(searchTerm))
+                ).map(e => ({ ...e, type: 'evidence' }));
                 results = results.concat(evidenceResults);
             }
-            
+
             if (results.length > 0) {
                 let html = `<h4>Search Results (${results.length} found):</h4><div class="search-results-list">`;
                 results.forEach(item => {
@@ -460,13 +488,17 @@
 
         function updateUserInterface() {
             const isTestUser = localStorage.getItem('testUserMode') === 'true';
-            const userName = currentUser.fullName || 'Public Viewer';
+            const userName = currentUser.fullName || currentUser.full_name || 'Public Viewer';
 
-            document.getElementById('userRole').textContent = isTestUser ?
-                `👁️ ${userName} (Test)` : `👁️ Public Viewer`;
+            const userRoleEl = document.getElementById('userRole');
+            if (userRoleEl) {
+                userRoleEl.textContent = isTestUser ?
+                    `👁️ ${userName} (Test)` : `👁️ Public Viewer`;
+            }
 
-            if (currentUser.walletAddress) {
-                document.getElementById('userWallet').textContent =
+            const userWalletEl = document.getElementById('userWallet');
+            if (userWalletEl && currentUser.walletAddress) {
+                userWalletEl.textContent =
                     currentUser.walletAddress.slice(0, 6) + '...' + currentUser.walletAddress.slice(-4);
             }
         }
@@ -475,11 +507,11 @@
             // Load public cases from localStorage
             const cases = JSON.parse(localStorage.getItem('cases') || '[]');
             const evidence = JSON.parse(localStorage.getItem('evidence') || '[]');
-            
+
             // Filter for public/closed cases only
             const publicCases = cases.filter(c => c.status === 'CLOSED' || c.isPublic);
             const publicEvidence = evidence.filter(e => e.isPublic || e.status === 'Verified');
-            
+
             document.getElementById('publicCases').textContent = publicCases.length;
             document.getElementById('closedCases').textContent = cases.filter(c => c.status === 'CLOSED').length;
             document.getElementById('publicEvidence').textContent = publicEvidence.length;
@@ -490,12 +522,12 @@
             if (searchTerm.trim()) {
                 const cases = JSON.parse(localStorage.getItem('cases') || '[]');
                 const publicCases = cases.filter(c => c.status === 'CLOSED' || c.isPublic);
-                const results = publicCases.filter(c => 
+                const results = publicCases.filter(c =>
                     c.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     c.location.toLowerCase().includes(searchTerm.toLowerCase())
                 );
-                
+
                 if (results.length > 0) {
                     let resultText = `🔍 Public Search Results for "${searchTerm}":\n\n`;
                     results.forEach(c => {

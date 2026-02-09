@@ -17,16 +17,34 @@ class NavbarManager {
     }
 
     async loadUserData() {
-        const currentUser = localStorage.getItem('currentUser');
-        if (!currentUser) return;
+        const currentUserData = localStorage.getItem('currentUser');
+        if (!currentUserData) return;
 
-        this.currentUser = currentUser;
-        
         try {
-            const userData = JSON.parse(localStorage.getItem('evidUser_' + currentUser) || '{}');
-            this.userRole = userData.role;
+            // Check if it's a JSON object (new format)
+            if (currentUserData.startsWith('{')) {
+                const parsedData = JSON.parse(currentUserData);
+                const user = parsedData.user;
+
+                if (parsedData.type === 'email') {
+                    this.currentUser = user.full_name || user.fullName || user.email;
+                } else if (parsedData.type === 'wallet') {
+                    this.currentUser = user.walletAddress || user.wallet_address || user.address;
+                } else {
+                    this.currentUser = 'User';
+                }
+
+                this.userRole = user.role;
+            } else {
+                // Legacy format (plain string)
+                this.currentUser = currentUserData;
+                const userData = JSON.parse(localStorage.getItem('evidUser_' + currentUserData) || '{}');
+                this.userRole = userData.role;
+            }
         } catch (error) {
             console.error('Error loading user data:', error);
+            // Fallback
+            this.currentUser = currentUserData;
         }
     }
 
@@ -121,16 +139,16 @@ class NavbarManager {
                 { label: 'Compliance', icon: 'check-square', href: 'compliance.html' }
             ],
             'public_viewer': [
-  { label: 'Dashboard', icon: 'home', href: 'dashboard-public.html' },
-  { label: 'Cases', icon: 'folder', href: 'cases-public.html' }
-  // TODO: Add search functionality - feature not yet implemented
-],
+                { label: 'Dashboard', icon: 'home', href: 'dashboard-public.html' },
+                { label: 'Cases', icon: 'folder', href: 'cases-public.html' }
+                // TODO: Add search functionality - feature not yet implemented
+            ],
         };
 
         // Handle numeric roles
         const numericRoleMap = {
             1: 'public_viewer',
-            2: 'investigator', 
+            2: 'investigator',
             3: 'forensic_analyst',
             4: 'legal_professional',
             5: 'court_official',
@@ -182,15 +200,15 @@ class NavbarManager {
 
     formatUserDisplay() {
         if (!this.currentUser) return '';
-        
+
         if (this.currentUser.startsWith('email_')) {
             return 'Email User';
         }
-        
+
         if (this.currentUser.startsWith('0x')) {
             return this.currentUser.slice(0, 6) + '...' + this.currentUser.slice(-4);
         }
-        
+
         return this.currentUser.length > 12 ? this.currentUser.slice(0, 12) + '...' : this.currentUser;
     }
 
@@ -199,7 +217,7 @@ class NavbarManager {
         if (event) {
             event.preventDefault();
         }
-        
+
         // Navigate in same tab
         window.location.href = href;
     }

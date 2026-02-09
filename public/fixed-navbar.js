@@ -18,16 +18,31 @@ class FixedNavbarManager {
     }
 
     async loadUserData() {
-        const currentUser = localStorage.getItem('currentUser');
-        if (!currentUser) return;
+        const currentUserData = localStorage.getItem('currentUser');
+        if (!currentUserData) return;
 
-        this.currentUser = currentUser;
-        
         try {
-            const userData = JSON.parse(localStorage.getItem('evidUser_' + currentUser) || '{}');
-            this.userRole = userData.role;
+            if (currentUserData.startsWith('{')) {
+                const parsed = JSON.parse(currentUserData);
+                const user = parsed.user;
+
+                if (parsed.type === 'email') {
+                    this.currentUser = user.full_name || user.fullName || user.email;
+                } else {
+                    this.currentUser = user.walletAddress || user.wallet_address || user.address;
+                }
+
+                this.userRole = user.role;
+            } else {
+                // Legacy format
+                this.currentUser = currentUserData;
+                const userData = JSON.parse(localStorage.getItem('evidUser_' + currentUserData) || '{}');
+                this.userRole = userData.role;
+            }
         } catch (error) {
             console.error('Error loading user data:', error);
+            // Fallback
+            this.currentUser = currentUserData;
         }
     }
 
@@ -363,16 +378,16 @@ class FixedNavbarManager {
                 { label: 'Compliance', icon: 'check-square', href: 'compliance.html' }
             ],
             'public_viewer': [
-  { label: 'Dashboard', icon: 'home', href: 'dashboard-public.html' },
-  { label: 'Cases', icon: 'folder', href: 'cases-public.html' }
-  // TODO: Add search functionality - feature not yet implemented
-],
+                { label: 'Dashboard', icon: 'home', href: 'dashboard-public.html' },
+                { label: 'Cases', icon: 'folder', href: 'cases-public.html' }
+                // TODO: Add search functionality - feature not yet implemented
+            ],
         };
 
         // Handle numeric roles
         const numericRoleMap = {
             1: 'public_viewer',
-            2: 'investigator', 
+            2: 'investigator',
             3: 'forensic_analyst',
             4: 'legal_professional',
             5: 'court_official',
@@ -424,16 +439,14 @@ class FixedNavbarManager {
 
     formatUserDisplay() {
         if (!this.currentUser) return '';
-        
-        if (this.currentUser.startsWith('email_')) {
-            return 'Email User';
-        }
-        
+
+        // If it looks like a wallet address
         if (this.currentUser.startsWith('0x')) {
             return this.currentUser.slice(0, 6) + '...' + this.currentUser.slice(-4);
         }
-        
-        return this.currentUser.length > 12 ? this.currentUser.slice(0, 12) + '...' : this.currentUser;
+
+        // For email/names, return truncated if too long, otherwise full
+        return this.currentUser.length > 15 ? this.currentUser.slice(0, 15) + '...' : this.currentUser;
     }
 
     navigateTo(href, event) {
@@ -441,7 +454,7 @@ class FixedNavbarManager {
         if (event) {
             event.preventDefault();
         }
-        
+
         // Navigate in same tab
         window.location.href = href;
     }
@@ -449,17 +462,17 @@ class FixedNavbarManager {
     toggleMobileMenu() {
         const roleNavItems = document.querySelector('.role-nav-items');
         const toggleBtn = document.querySelector('.mobile-menu-toggle i');
-        
+
         if (roleNavItems) {
             roleNavItems.classList.toggle('mobile-open');
-            
+
             // Update toggle icon
             if (roleNavItems.classList.contains('mobile-open')) {
                 toggleBtn.setAttribute('data-lucide', 'x');
             } else {
                 toggleBtn.setAttribute('data-lucide', 'menu');
             }
-            
+
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
@@ -471,7 +484,7 @@ class FixedNavbarManager {
         document.addEventListener('click', (event) => {
             const navbar = document.querySelector('.fixed-navbar');
             const roleNavItems = document.querySelector('.role-nav-items');
-            
+
             if (navbar && !navbar.contains(event.target) && roleNavItems) {
                 roleNavItems.classList.remove('mobile-open');
                 const toggleBtn = document.querySelector('.mobile-menu-toggle i');

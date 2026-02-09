@@ -177,26 +177,47 @@
                 await new Promise(resolve => setTimeout(resolve, 300));
 
                 // Get user account
-                const userAccount = localStorage.getItem('currentUser');
-                console.log('Dashboard router - userAccount:', userAccount);
+                const currentUserRaw = localStorage.getItem('currentUser');
+                console.log('Dashboard router - raw currentUser:', currentUserRaw);
 
-                if (!userAccount) {
+                if (!currentUserRaw) {
                     throw new Error('Please log in first.');
+                }
+
+                let userAccount = currentUserRaw;
+                let userData = null;
+
+                // Parse if it's a JSON object (new format)
+                if (currentUserRaw.startsWith('{')) {
+                    try {
+                        const parsed = JSON.parse(currentUserRaw);
+                        userData = parsed.user;
+                        if (parsed.type === 'email') {
+                            userAccount = userData.email;
+                        } else {
+                            userAccount = userData.walletAddress || userData.address;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing currentUser:', e);
+                    }
                 }
 
                 updateProgress('Loading user profile...', 50);
                 await new Promise(resolve => setTimeout(resolve, 300));
 
-                // Get user data and determine role
-                let userData = await getUserInfo(userAccount);
+                // Get user data if not already parsed
+                if (!userData) {
+                    userData = await getUserInfo(userAccount);
+                }
+
                 let finalRole = localStorage.getItem('selectedRole');
-                
+
                 // If no selected role, try to get from user data
                 if (!finalRole && userData && userData.role) {
                     finalRole = userData.role;
                     localStorage.setItem('selectedRole', finalRole);
                 }
-                
+
                 // If still no role, default to public_viewer
                 if (!finalRole) {
                     finalRole = 'public_viewer';
@@ -223,7 +244,7 @@
 
                 // Route to appropriate dashboard
                 const dashboardUrl = getDashboardUrl(finalRole);
-                    
+
                 console.log(`Redirecting ${finalRole} to ${dashboardUrl}`);
 
                 // Track dashboard access
@@ -290,7 +311,11 @@
         }
 
         function truncateWallet(address) {
-            if (!address) return '0x****...****';
+            if (!address) return '';
+            // If it's an email or name (doesn't start with 0x and has length), return as is or slightly truncated
+            if (!address.startsWith('0x')) {
+                return address.length > 20 ? address.slice(0, 20) + '...' : address;
+            }
             return address.slice(0, 6) + '...' + address.slice(-4);
         }
 
