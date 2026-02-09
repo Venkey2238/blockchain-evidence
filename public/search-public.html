@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search - EVID-DGC</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .search-container {
+            max-width: 1200px;
+            margin: 80px auto 40px;
+            padding: 20px;
+        }
+
+        .search-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .search-header h1 {
+            color: #D32F2F;
+            margin-bottom: 10px;
+        }
+
+        .search-box {
+            max-width: 800px;
+            margin: 0 auto 40px;
+            position: relative;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-input-wrapper input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .search-input-wrapper input:focus {
+            outline: none;
+            border-color: #D32F2F;
+            box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+        }
+
+        .search-btn {
+            padding: 15px 30px;
+            background: #D32F2F;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .search-btn:hover {
+            background: #C41C3B;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+        }
+
+        .search-btn:active {
+            transform: translateY(0);
+        }
+
+        .search-filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .filter-btn.active {
+            background: #D32F2F;
+            color: white;
+            border-color: #D32F2F;
+            box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
+        }
+
+        .filter-btn:hover {
+            border-color: #D32F2F;
+            background: #FFEBEE;
+        }
+
+        .filter-btn.active:hover {
+            background: #C41C3B;
+        }
+
+        .advanced-filters {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            font-weight: 500;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #D32F2F;
+            box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+        }
+
+        .reset-filters-btn {
+            padding: 10px 20px;
+            background: white;
+            color: #64748b;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .reset-filters-btn:hover {
+            border-color: #D32F2F;
+            color: #D32F2F;
+        }
+
+        .toggle-advanced-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+            font-weight: 500;
+            color: #475569;
+        }
+
+        .toggle-advanced-btn:hover {
+            border-color: #D32F2F;
+            color: #D32F2F;
+            background: #FFEBEE;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+            padding: 20px 0;
+        }
+
+        .pagination-btn {
+            padding: 10px 15px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            border-color: #D32F2F;
+            color: #D32F2F;
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-btn.active {
+            background: #D32F2F;
+            color: white;
+            border-color: #D32F2F;
+        }
+
+        .pagination-info {
+            padding: 10px 20px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .search-results {
+            margin-top: 40px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .results-count {
+            font-size: 18px;
+            color: #475569;
+        }
+
+        .sort-dropdown {
+            padding: 8px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .result-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .result-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: #D32F2F;
+            transform: translateY(-2px);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .result-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .result-type {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .result-type.case {
+            background: #FFEBEE;
+            color: #D32F2F;
+            border: 1px solid #D32F2F;
+        }
+
+        .result-type.evidence {
+            background: #E8F5E9;
+            color: #2E7D32;
+            border: 1px solid #2E7D32;
+        }
+
+        .result-meta {
+            display: flex;
+            gap: 20px;
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .result-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .result-description {
+            color: #475569;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .result-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .result-tag {
+            padding: 4px 10px;
+            background: #f1f5f9;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #475569;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+
+        .no-results-icon {
+            color: #cbd5e1;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-message {
+            background: #FEE2E2;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #FECACA;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .search-container {
+                margin-top: 100px;
+                padding: 15px;
+            }
+
+            .search-input-wrapper {
+                flex-direction: column;
+            }
+
+            .search-icon {
+                right: 20px;
+                top: 20px;
+                transform: none;
+            }
+
+            .search-filters {
+                justify-content: flex-start;
+            }
+
+            .results-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .sort-dropdown {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <div class="search-container">
+        <div class="search-header">
+            <h1>Search Cases & Evidence</h1>
+            <p style="color: #64748b;">Search through public cases and evidence records</p>
+        </div>
+
+        <div class="search-box">
+            <div class="search-input-wrapper">
+                <input type="text" id="searchInput" placeholder="Enter case number, title, or keywords..." />
+                <button class="search-btn" onclick="performSearch()">
+                    <i data-lucide="search"></i>
+                    Search
+                </button>
+            </div>
+        </div>
+
+        <div class="search-filters">
+            <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">
+                <i data-lucide="list"></i>
+                All
+            </button>
+            <button class="filter-btn" data-filter="cases" onclick="setFilter('cases', this)">
+                <i data-lucide="folder"></i>
+                Cases
+            </button>
+            <button class="filter-btn" data-filter="evidence" onclick="setFilter('evidence', this)">
+                <i data-lucide="file"></i>
+                Evidence
+            </button>
+        </div>
+
+        <!-- Advanced Filters -->
+        <div class="advanced-filters" id="advancedFilters" style="display: none;">
+            <div class="filter-group">
+                <label for="statusFilter">
+                    <i data-lucide="tag"></i>
+                    Status
+                </label>
+                <select id="statusFilter" onchange="applyAdvancedFilters()">
+                    <option value="">All Statuses</option>
+                    <option value="active">Active</option>
+                    <option value="pending">Pending</option>
+                    <option value="verified">Verified</option>
+                    <option value="closed">Closed</option>
+                    <option value="archived">Archived</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="dateFromFilter">
+                    <i data-lucide="calendar"></i>
+                    Date From
+                </label>
+                <input type="date" id="dateFromFilter" onchange="applyAdvancedFilters()">
+            </div>
+            
+            <div class="filter-group">
+                <label for="dateToFilter">
+                    <i data-lucide="calendar"></i>
+                    Date To
+                </label>
+                <input type="date" id="dateToFilter" onchange="applyAdvancedFilters()">
+            </div>
+            
+            <button class="reset-filters-btn" onclick="resetAdvancedFilters()">
+                <i data-lucide="x-circle"></i>
+                Reset Filters
+            </button>
+        </div>
+
+        <button class="toggle-advanced-btn" onclick="toggleAdvancedFilters()">
+            <i data-lucide="sliders-horizontal"></i>
+            <span id="filterToggleText">Show Advanced Filters</span>
+        </button>
+
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+        <div class="search-results" id="searchResults" style="display: none;">
+            <div class="results-header">
+                <div class="results-count" id="resultsCount">0 results found</div>
+                <select class="sort-dropdown" id="sortDropdown" onchange="sortResults()">
+                    <option value="relevance">Sort by: Relevance</option>
+                    <option value="date-desc">Date: Newest First</option>
+                    <option value="date-asc">Date: Oldest First</option>
+                    <option value="title">Title: A-Z</option>
+                </select>
+            </div>
+            <div id="resultsContainer"></div>
+            
+            <!-- Pagination -->
+            <div class="pagination" id="pagination" style="display: none;">
+                <button class="pagination-btn" id="prevBtn" onclick="changePage(-1)">
+                    <i data-lucide="chevron-left"></i>
+                    Previous
+                </button>
+                <div class="pagination-info" id="paginationInfo">Page 1 of 1</div>
+                <button class="pagination-btn" id="nextBtn" onclick="changePage(1)">
+                    Next
+                    <i data-lucide="chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="loadingIndicator" class="loading" style="display: none;">
+            <i data-lucide="loader" class="spin"></i>
+            <p>Searching...</p>
+        </div>
+
+        <div id="noResults" class="no-results" style="display: none;">
+            <i data-lucide="search-x" size="64" class="no-results-icon"></i>
+            <h3>No results found</h3>
+            <p>Try adjusting your search terms or filters</p>
+        </div>
+    </div>
+
+    <script src="navbar.js"></script>
+    <script src="config.js"></script>
+    <script>
+        let currentFilter = 'all';
+        let searchData = [];
+        let filteredResults = [];
+        let currentPage = 1;
+        const resultsPerPage = 10;
+        let advancedFiltersVisible = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            
+            // Allow search on Enter key
+            document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+
+            // Load initial data
+            loadInitialData();
+        });
+
+        // Toggle advanced filters
+        function toggleAdvancedFilters() {
+            advancedFiltersVisible = !advancedFiltersVisible;
+            const filtersDiv = document.getElementById('advancedFilters');
+            const toggleText = document.getElementById('filterToggleText');
+            
+            if (advancedFiltersVisible) {
+                filtersDiv.style.display = 'grid';
+                toggleText.textContent = 'Hide Advanced Filters';
+            } else {
+                filtersDiv.style.display = 'none';
+                toggleText.textContent = 'Show Advanced Filters';
+            }
+            
+            lucide.createIcons();
+        }
+
+        // Reset advanced filters
+        function resetAdvancedFilters() {
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('dateFromFilter').value = '';
+            document.getElementById('dateToFilter').value = '';
+            
+            const query = document.getElementById('searchInput').value.trim();
+            if (query) {
+                performSearch();
+            }
+        }
+
+        // Apply advanced filters
+        function applyAdvancedFilters() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (query) {
+                performSearch();
+            }
+        }
+
+        // Load cases and evidence from API
+        async function loadInitialData() {
+            try {
+                const apiBase = config.API_BASE_URL || window.location.origin;
+                const [casesRes, evidenceRes] = await Promise.all([
+                    fetch(`${apiBase}/cases`),
+                    fetch(`${apiBase}/evidence`)
+                ]);
+
+                if (!casesRes.ok || !evidenceRes.ok) {
+                    throw new Error('Failed to fetch data from API');
+                }
+
+                const casesData = await casesRes.json();
+                const evidenceData = await evidenceRes.json();
+
+                searchData = [
+                    ...(casesData.cases || []).map(c => ({ ...c, type: 'case' })),
+                    ...(evidenceData.evidence || []).map(e => ({ ...e, type: 'evidence' }))
+                ];
+                
+                console.log('Loaded data:', searchData.length, 'items');
+                
+                // Hide error message if data loaded successfully
+                document.getElementById('errorMessage').style.display = 'none';
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showError('Failed to load data from server. Please try refreshing the page.');
+            }
+        }
+
+        function setFilter(filter, element) {
+            currentFilter = filter;
+            
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            element.classList.add('active');
+            
+            // Re-render icons after updating
+            lucide.createIcons();
+            
+            // Re-run search if there's a query
+            const query = document.getElementById('searchInput').value.trim();
+            if (query) {
+                performSearch();
+            }
+        }
+
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            
+            // Hide previous results
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('noResults').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('pagination').style.display = 'none';
+            
+            if (!query) {
+                showError('Please enter a search term');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loadingIndicator').style.display = 'block';
+            
+            try {
+                // Get advanced filter values
+                const statusFilter = document.getElementById('statusFilter').value;
+                const dateFrom = document.getElementById('dateFromFilter').value;
+                const dateTo = document.getElementById('dateToFilter').value;
+                
+                // Filter data based on query and filters
+                filteredResults = searchData.filter(item => {
+                    // Filter by type
+                    if (currentFilter !== 'all' && item.type !== currentFilter.replace('s', '')) {
+                        return false;
+                    }
+                    
+                    // Filter by status
+                    if (statusFilter && item.status !== statusFilter) {
+                        return false;
+                    }
+                    
+                    // Filter by date range
+                    if (dateFrom || dateTo) {
+                        const itemDate = new Date(item.created_at || item.upload_date);
+                        if (dateFrom && itemDate < new Date(dateFrom)) return false;
+                        if (dateTo && itemDate > new Date(dateTo)) return false;
+                    }
+                    
+                    // Search in relevant fields
+                    const searchFields = [
+                        item.case_number,
+                        item.title,
+                        item.description,
+                        item.file_name,
+                        item.status
+                    ].filter(Boolean).join(' ').toLowerCase();
+                    
+                    return searchFields.includes(query);
+                });
+                
+                // Hide loading
+                document.getElementById('loadingIndicator').style.display = 'none';
+                
+                // Reset to first page
+                currentPage = 1;
+                
+                // Display results
+                if (filteredResults.length > 0) {
+                    displayResults();
+                } else {
+                    document.getElementById('noResults').style.display = 'block';
+                }
+                
+            } catch (error) {
+                document.getElementById('loadingIndicator').style.display = 'none';
+                showError('Error performing search: ' + error.message);
+            }
+        }
+
+        function displayResults() {
+            const startIndex = (currentPage - 1) * resultsPerPage;
+            const endIndex = startIndex + resultsPerPage;
+            const resultsToShow = filteredResults.slice(startIndex, endIndex);
+            const totalPages = Math.ceil(filteredResults.length / resultsPerPage);
+            
+            document.getElementById('searchResults').style.display = 'block';
+            document.getElementById('resultsCount').textContent = 
+                `${filteredResults.length} result${filteredResults.length !== 1 ? 's' : ''} found`;
+            
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '';
+            
+            resultsToShow.forEach(result => {
+                const card = createResultCard(result);
+                container.appendChild(card);
+            });
+            
+            // Update pagination
+            if (totalPages > 1) {
+                document.getElementById('pagination').style.display = 'flex';
+                document.getElementById('paginationInfo').textContent = 
+                    `Page ${currentPage} of ${totalPages}`;
+                document.getElementById('prevBtn').disabled = currentPage === 1;
+                document.getElementById('nextBtn').disabled = currentPage === totalPages;
+            }
+            
+            lucide.createIcons();
+        }
+
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredResults.length / resultsPerPage);
+            const newPage = currentPage + direction;
+            
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                displayResults();
+                
+                // Scroll to top of results
+                document.getElementById('searchResults').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            }
+        }
+
+        function createResultCard(result) {
+            const card = document.createElement('div');
+            card.className = 'result-card';
+            card.onclick = () => viewResult(result);
+            
+            const isCase = result.type === 'case';
+            
+            card.innerHTML = `
+                <div class="result-header">
+                    <div>
+                        <div class="result-title">${isCase ? result.title : result.file_name}</div>
+                        <div class="result-meta">
+                            ${isCase ? `
+                                <div class="result-meta-item">
+                                    <i data-lucide="file-text" size="14"></i>
+                                    ${result.case_number}
+                                </div>
+                            ` : `
+                                <div class="result-meta-item">
+                                    <i data-lucide="link" size="14"></i>
+                                    ${result.case_number || 'N/A'}
+                                </div>
+                            `}
+                            <div class="result-meta-item">
+                                <i data-lucide="calendar" size="14"></i>
+                                ${formatDate(result.created_at || result.upload_date)}
+                            </div>
+                            ${result.status ? `
+                                <div class="result-meta-item">
+                                    <i data-lucide="info" size="14"></i>
+                                    ${result.status}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    <div class="result-type ${result.type}">${result.type}</div>
+                </div>
+                
+                ${result.description ? `
+                    <div class="result-description">${result.description}</div>
+                ` : ''}
+                
+                ${!isCase && result.file_type ? `
+                    <div class="result-meta">
+                        <div class="result-meta-item">
+                            <i data-lucide="file" size="14"></i>
+                            ${result.file_type}
+                        </div>
+                        ${result.file_size ? `
+                            <div class="result-meta-item">
+                                <i data-lucide="hard-drive" size="14"></i>
+                                ${formatFileSize(result.file_size)}
+                            </div>
+                        ` : ''}
+                    </div>
+                ` : ''}
+            `;
+            
+            return card;
+        }
+
+        function viewResult(result) {
+            if (result.type === 'case') {
+                window.location.href = `case-details.html?case=${result.case_number}`;
+            } else {
+                window.location.href = `evidence-verification.html?id=${result.id}`;
+            }
+        }
+
+        function sortResults() {
+            const sortValue = document.getElementById('sortDropdown').value;
+            
+            // Sort the filtered results array
+            filteredResults.sort((a, b) => {
+                switch (sortValue) {
+                    case 'date-desc':
+                        const dateA = new Date(a.created_at || a.upload_date);
+                        const dateB = new Date(b.created_at || b.upload_date);
+                        return dateB - dateA;
+                    
+                    case 'date-asc':
+                        const dateA2 = new Date(a.created_at || a.upload_date);
+                        const dateB2 = new Date(b.created_at || b.upload_date);
+                        return dateA2 - dateB2;
+                    
+                    case 'title':
+                        const titleA = (a.title || a.file_name || '').toLowerCase();
+                        const titleB = (b.title || b.file_name || '').toLowerCase();
+                        return titleA.localeCompare(titleB);
+                    
+                    default: // relevance
+                        return 0;
+                }
+            });
+            
+            // Reset to first page and display
+            currentPage = 1;
+            displayResults();
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes) return 'N/A';
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            if (bytes === 0) return '0 Bytes';
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

@@ -379,8 +379,8 @@ class FixedNavbarManager {
             ],
             'public_viewer': [
                 { label: 'Dashboard', icon: 'home', href: 'dashboard-public.html' },
-                { label: 'Cases', icon: 'folder', href: 'cases-public.html' }
-                // TODO: Add search functionality - feature not yet implemented
+                { label: 'Cases', icon: 'folder', href: 'cases-public.html' },
+                { label: 'Search', icon: 'search', href: 'search-public.html' }
             ],
         };
 
