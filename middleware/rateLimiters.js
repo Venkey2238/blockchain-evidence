@@ -1,40 +1,41 @@
 const rateLimit = require('express-rate-limit');
+const { rateLimits } = require('../config');
 
 // Authentication rate limiting
 const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // limit each IP to 5 requests per windowMs for auth
+    windowMs: rateLimits.auth.windowMs,
+    max: rateLimits.auth.max,
     message: { error: 'Too many authentication attempts, please try again later' }
 });
 
 // General API rate limiting
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100 // limit each IP to 100 requests per windowMs
+    windowMs: rateLimits.api.windowMs,
+    max: rateLimits.api.max
 });
 
 // Admin rate limiting (stricter)
 const adminLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 50
+    windowMs: rateLimits.admin.windowMs,
+    max: rateLimits.admin.max
 });
 
 // Evidence export rate limiting
 const exportLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
-    max: 100 // 100 downloads per hour
+    windowMs: rateLimits.export.windowMs,
+    max: rateLimits.export.max
 });
 
 // Rate limiter for case timeline pages
 const timelineLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100 // limit each IP to 100 requests per window for timeline pages
+    windowMs: rateLimits.timeline.windowMs,
+    max: rateLimits.timeline.max
 });
 
 // Rate limiter for public policy pages
 const policyPageLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 200 // limit each IP to 200 requests per window for policy pages
+    windowMs: rateLimits.policy.windowMs,
+    max: rateLimits.policy.max
 });
 
 module.exports = {
