@@ -269,6 +269,17 @@
         // ===== PREMIUM PUBLIC SEARCH PORTAL =====
         // Strict Red & White Theme - Discovery Experience
         
+        // HTML escaping function to prevent XSS
+        function escapeHtml(value) {
+            if (value === undefined || value === null) return '';
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+        
         // Mock database for public records
         const publicRecords = [
             // Cases
@@ -602,13 +613,16 @@
                 resultsHeader.style.display = 'none';
                 paginationSection.style.display = 'none';
                 
+                // Escape the search term to prevent XSS
+                const escapedSearchTerm = escapeHtml(currentSearchTerm);
+                
                 container.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">
                             <i data-lucide="search-x"></i>
                         </div>
                         <h3>No Results Found</h3>
-                        <p>We couldn't find any matches for "${currentSearchTerm}"</p>
+                        <p>We couldn't find any matches for "${escapedSearchTerm}"</p>
                         <div class="empty-state-suggestions">
                             <button class="suggestion-chip" onclick="suggestedSearch('theft')">
                                 🔍 Try "theft"
@@ -644,96 +658,117 @@
             // Update pagination buttons
             updatePagination(sortedResults.length);
             
-            // Render results
-            container.innerHTML = paginatedResults.map(record => `
-                <div class="result-card" onclick="viewRecord('${record.id}')">
-                    <span class="result-type-badge ${record.type}">
-                        <i data-lucide="${record.type === 'case' ? 'folder' : 'file'}"></i>
-                        ${record.type === 'case' ? 'CASE' : 'EVIDENCE'}
-                    </span>
-                    
-                    <h3 class="result-title">${record.title}</h3>
-                    
-                    <div class="result-meta">
-                        <span class="result-meta-item">
-                            <i data-lucide="hash"></i>
-                            ${record.id}
+            // Render results with escaped values
+            container.innerHTML = paginatedResults.map(record => {
+                // Escape all user-provided content
+                const escapedId = escapeHtml(record.id);
+                const escapedTitle = escapeHtml(record.title);
+                const escapedDate = escapeHtml(formatDate(record.date));
+                const escapedDescription = escapeHtml(truncateText(record.description, 120));
+                const escapedCaseId = escapeHtml(record.caseId || '');
+                const escapedFileType = escapeHtml(record.fileType ? capitalizeFirst(record.fileType) : '');
+                const escapedFileSize = escapeHtml(record.fileSize ? formatFileSize(record.fileSize) : '');
+                const escapedInvestigator = escapeHtml(record.investigator || '');
+                const escapedLocation = escapeHtml(record.location || '');
+                
+                // Handle tags
+                const tagsHtml = record.tags ? record.tags.slice(0, 2).map(tag => 
+                    `<span class="result-tag">#${escapeHtml(tag)}</span>`
+                ).join('') : '';
+                
+                const moreTagsHtml = record.tags && record.tags.length > 2 ? 
+                    `<span class="result-tag">+${escapeHtml(String(record.tags.length - 2))}</span>` : '';
+                
+                const typeIcon = record.type === 'case' ? 'folder' : 'file';
+                const typeText = record.type === 'case' ? 'CASE' : 'EVIDENCE';
+                const idPrefix = record.type === 'case' ? 'Case #' : 'Evidence ID: ';
+                
+                return `
+                    <div class="result-card" onclick="viewRecord('${escapedId}')">
+                        <span class="result-type-badge ${record.type}">
+                            <i data-lucide="${typeIcon}"></i>
+                            ${typeText}
                         </span>
-                        <span class="result-meta-item">
-                            <i data-lucide="calendar"></i>
-                            ${formatDate(record.date)}
-                        </span>
-                        ${record.type === 'evidence' ? `
+                        
+                        <h3 class="result-title">${escapedTitle}</h3>
+                        
+                        <div class="result-meta">
                             <span class="result-meta-item">
-                                <i data-lucide="link"></i>
-                                ${record.caseId}
+                                <i data-lucide="hash"></i>
+                                ${escapedId}
                             </span>
-                        ` : ''}
-                    </div>
-                    
-                    <div class="result-id">
-                        <i data-lucide="${record.type === 'case' ? 'folder' : 'file-text'}"></i>
-                        ${record.type === 'case' ? `Case #${record.id}` : `Evidence ID: ${record.id}`}
-                    </div>
-                    
-                    <p class="result-description">
-                        ${truncateText(record.description, 120)}
-                    </p>
-                    
-                    ${record.type === 'evidence' ? `
-                        <div class="evidence-metadata">
-                            <div class="evidence-meta-item">
-                                <span class="evidence-meta-label">
-                                    <i data-lucide="hard-drive"></i>
-                                    File Type
+                            <span class="result-meta-item">
+                                <i data-lucide="calendar"></i>
+                                ${escapedDate}
+                            </span>
+                            ${record.type === 'evidence' && record.caseId ? `
+                                <span class="result-meta-item">
+                                    <i data-lucide="link"></i>
+                                    ${escapedCaseId}
                                 </span>
-                                <span class="evidence-meta-value">${capitalizeFirst(record.fileType)}</span>
-                            </div>
-                            <div class="evidence-meta-item">
-                                <span class="evidence-meta-label">
-                                    <i data-lucide="database"></i>
-                                    Size
-                                </span>
-                                <span class="evidence-meta-value">${formatFileSize(record.fileSize)}</span>
-                            </div>
-                        </div>
-                    ` : `
-                        <div class="evidence-metadata">
-                            <div class="evidence-meta-item">
-                                <span class="evidence-meta-label">
-                                    <i data-lucide="user"></i>
-                                    Investigator
-                                </span>
-                                <span class="evidence-meta-value">${record.investigator}</span>
-                            </div>
-                            <div class="evidence-meta-item">
-                                <span class="evidence-meta-label">
-                                    <i data-lucide="map-pin"></i>
-                                    Location
-                                </span>
-                                <span class="evidence-meta-value">${record.location}</span>
-                            </div>
-                        </div>
-                    `}
-                    
-                    <div class="result-footer">
-                        <div class="result-tags">
-                            ${record.tags.slice(0, 2).map(tag => `
-                                <span class="result-tag">#${tag}</span>
-                            `).join('')}
-                            ${record.tags.length > 2 ? `
-                                <span class="result-tag">+${record.tags.length - 2}</span>
                             ` : ''}
                         </div>
-                        ${record.blockchainVerified ? `
-                            <span class="blockchain-verified-badge">
-                                <i data-lucide="shield"></i>
-                                Verified
-                            </span>
-                        ` : ''}
+                        
+                        <div class="result-id">
+                            <i data-lucide="${typeIcon}"></i>
+                            ${idPrefix}${escapedId}
+                        </div>
+                        
+                        <p class="result-description">
+                            ${escapedDescription}
+                        </p>
+                        
+                        ${record.type === 'evidence' ? `
+                            <div class="evidence-metadata">
+                                <div class="evidence-meta-item">
+                                    <span class="evidence-meta-label">
+                                        <i data-lucide="hard-drive"></i>
+                                        File Type
+                                    </span>
+                                    <span class="evidence-meta-value">${escapedFileType}</span>
+                                </div>
+                                <div class="evidence-meta-item">
+                                    <span class="evidence-meta-label">
+                                        <i data-lucide="database"></i>
+                                        Size
+                                    </span>
+                                    <span class="evidence-meta-value">${escapedFileSize}</span>
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="evidence-metadata">
+                                <div class="evidence-meta-item">
+                                    <span class="evidence-meta-label">
+                                        <i data-lucide="user"></i>
+                                        Investigator
+                                    </span>
+                                    <span class="evidence-meta-value">${escapedInvestigator}</span>
+                                </div>
+                                <div class="evidence-meta-item">
+                                    <span class="evidence-meta-label">
+                                        <i data-lucide="map-pin"></i>
+                                        Location
+                                    </span>
+                                    <span class="evidence-meta-value">${escapedLocation}</span>
+                                </div>
+                            </div>
+                        `}
+                        
+                        <div class="result-footer">
+                            <div class="result-tags">
+                                ${tagsHtml}
+                                ${moreTagsHtml}
+                            </div>
+                            ${record.blockchainVerified ? `
+                                <span class="blockchain-verified-badge">
+                                    <i data-lucide="shield"></i>
+                                    Verified
+                                </span>
+                            ` : ''}
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             
             lucide.createIcons();
         }
@@ -831,8 +866,9 @@
         }
         
         function viewRecord(recordId) {
-            // In a real implementation, this would navigate to a detail page
-            showNotification(`📋 Viewing record: ${recordId}`, 'info');
+            // Escape record ID for safe display
+            const escapedId = escapeHtml(recordId);
+            showNotification(`📋 Viewing record: ${escapedId}`, 'info');
             
             // Simulate navigation
             setTimeout(() => {
@@ -929,6 +965,9 @@
         }
         
         function showNotification(message, type = 'info') {
+            // Escape message to prevent XSS
+            const escapedMessage = escapeHtml(message);
+            
             const notification = document.createElement('div');
             notification.style.cssText = `
                 position: fixed;
@@ -954,7 +993,7 @@
             if (type === 'success') icon = 'check-circle';
             if (type === 'error') icon = 'alert-circle';
             
-            notification.innerHTML = `<i data-lucide="${icon}" style="width: 20px; height: 20px; flex-shrink: 0;"></i>${message}`;
+            notification.innerHTML = `<i data-lucide="${icon}" style="width: 20px; height: 20px; flex-shrink: 0;"></i>${escapedMessage}`;
             document.body.appendChild(notification);
             lucide.createIcons();
             

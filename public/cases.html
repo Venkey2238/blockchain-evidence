@@ -401,6 +401,17 @@
             document.getElementById('verifiedCount').textContent = verifiedTotal;
         }
         
+        // HTML escaping function to prevent XSS
+        function escapeHtml(unsafe) {
+            if (unsafe === undefined || unsafe === null) return '';
+            return String(unsafe)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+        
         function filterCases() {
             const searchTerm = document.getElementById('caseSearchInput').value.toLowerCase();
             
@@ -415,12 +426,15 @@
                     return false;
                 }
                 
-                // Apply search filter
+                // Apply search filter with safe property access
                 if (searchTerm) {
+                    // Safely access investigator with fallback for officer property
+                    const investigator = caseItem.investigator || caseItem.officer || '';
+                    
                     return caseItem.id.toLowerCase().includes(searchTerm) ||
                            caseItem.title.toLowerCase().includes(searchTerm) ||
-                           caseItem.investigator.toLowerCase().includes(searchTerm) ||
-                           caseItem.location.toLowerCase().includes(searchTerm);
+                           investigator.toLowerCase().includes(searchTerm) ||
+                           (caseItem.location || '').toLowerCase().includes(searchTerm);
                 }
                 
                 return true;
@@ -497,80 +511,92 @@
             const endIndex = startIndex + itemsPerPage;
             const paginatedCases = cases.slice(startIndex, endIndex);
             
-            container.innerHTML = paginatedCases.map(caseItem => `
-                <div class="case-vault-card" onclick="viewCaseDetails('${caseItem.id}')">
-                    <div class="case-header">
-                        <div class="case-type-icon">
-                            <i data-lucide="${getCaseIcon(caseItem.status)}"></i>
-                        </div>
-                        <span class="case-status ${caseItem.status}">
-                            <i data-lucide="${getStatusIcon(caseItem.status)}"></i>
-                            ${caseItem.status.toUpperCase()}
-                        </span>
-                    </div>
-                    
-                    <h3 class="case-title">${caseItem.title}</h3>
-                    <div class="case-id">
-                        <i data-lucide="hash"></i>
-                        ${caseItem.id}
-                    </div>
-                    
-                    <div class="case-metadata">
-                        <div class="case-meta-item">
-                            <span class="meta-label">
-                                <i data-lucide="map-pin"></i>
-                                Location
+            container.innerHTML = paginatedCases.map(caseItem => {
+                // Escape all user-provided content
+                const escapedId = escapeHtml(caseItem.id);
+                const escapedTitle = escapeHtml(caseItem.title);
+                const escapedLocation = escapeHtml(caseItem.location || 'N/A');
+                const escapedInvestigator = escapeHtml(caseItem.investigator || caseItem.officer || 'N/A');
+                const escapedPriority = escapeHtml(caseItem.priority || 'N/A');
+                const escapedDate = escapeHtml(formatDate(caseItem.date));
+                const escapedEvidenceCount = escapeHtml(String(caseItem.evidenceCount || 0));
+                const caseIcon = getCaseIcon(caseItem.status);
+                const statusIcon = getStatusIcon(caseItem.status);
+                const status = escapeHtml(caseItem.status.toUpperCase());
+                const priorityColor = getPriorityColor(caseItem.priority);
+                const blockchainBadge = caseItem.blockchainVerified ? 
+                    '<span class="blockchain-badge"><i data-lucide="shield"></i> Verified</span>' : '';
+                
+                return `
+                    <div class="case-vault-card" onclick="viewCaseDetails('${escapedId}')">
+                        <div class="case-header">
+                            <div class="case-type-icon">
+                                <i data-lucide="${caseIcon}"></i>
+                            </div>
+                            <span class="case-status ${caseItem.status}">
+                                <i data-lucide="${statusIcon}"></i>
+                                ${status}
                             </span>
-                            <span class="meta-value">${caseItem.location}</span>
                         </div>
-                        <div class="case-meta-item">
-                            <span class="meta-label">
-                                <i data-lucide="calendar"></i>
-                                Created
-                            </span>
-                            <span class="meta-value">${formatDate(caseItem.date)}</span>
+                        
+                        <h3 class="case-title">${escapedTitle}</h3>
+                        <div class="case-id">
+                            <i data-lucide="hash"></i>
+                            ${escapedId}
                         </div>
-                        <div class="case-meta-item">
-                            <span class="meta-label">
-                                <i data-lucide="user"></i>
-                                Investigator
-                            </span>
-                            <span class="meta-value">${caseItem.investigator}</span>
+                        
+                        <div class="case-metadata">
+                            <div class="case-meta-item">
+                                <span class="meta-label">
+                                    <i data-lucide="map-pin"></i>
+                                    Location
+                                </span>
+                                <span class="meta-value">${escapedLocation}</span>
+                            </div>
+                            <div class="case-meta-item">
+                                <span class="meta-label">
+                                    <i data-lucide="calendar"></i>
+                                    Created
+                                </span>
+                                <span class="meta-value">${escapedDate}</span>
+                            </div>
+                            <div class="case-meta-item">
+                                <span class="meta-label">
+                                    <i data-lucide="user"></i>
+                                    Investigator
+                                </span>
+                                <span class="meta-value">${escapedInvestigator}</span>
+                            </div>
+                            <div class="case-meta-item">
+                                <span class="meta-label">
+                                    <i data-lucide="flag"></i>
+                                    Priority
+                                </span>
+                                <span class="meta-value" style="color: ${priorityColor}">${escapedPriority}</span>
+                            </div>
                         </div>
-                        <div class="case-meta-item">
-                            <span class="meta-label">
-                                <i data-lucide="flag"></i>
-                                Priority
+                        
+                        <div class="case-evidence-summary">
+                            <span class="evidence-count">
+                                <i data-lucide="file"></i>
+                                ${escapedEvidenceCount} Evidence Items
                             </span>
-                            <span class="meta-value" style="color: ${getPriorityColor(caseItem.priority)}">${caseItem.priority}</span>
+                            ${blockchainBadge}
+                        </div>
+                        
+                        <div class="case-actions">
+                            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); viewCaseDetails('${escapedId}')">
+                                <i data-lucide="eye"></i>
+                                View Details
+                            </button>
+                            <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); addEvidence('${escapedId}')">
+                                <i data-lucide="plus"></i>
+                                Add Evidence
+                            </button>
                         </div>
                     </div>
-                    
-                    <div class="case-evidence-summary">
-                        <span class="evidence-count">
-                            <i data-lucide="file"></i>
-                            ${caseItem.evidenceCount || 0} Evidence Items
-                        </span>
-                        ${caseItem.blockchainVerified ? `
-                            <span class="blockchain-badge">
-                                <i data-lucide="shield"></i>
-                                Verified
-                            </span>
-                        ` : ''}
-                    </div>
-                    
-                    <div class="case-actions">
-                        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); viewCaseDetails('${caseItem.id}')">
-                            <i data-lucide="eye"></i>
-                            View Details
-                        </button>
-                        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); addEvidence('${caseItem.id}')">
-                            <i data-lucide="plus"></i>
-                            Add Evidence
-                        </button>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             
             lucide.createIcons();
         }
@@ -598,34 +624,40 @@
             const endIndex = startIndex + itemsPerPage;
             const paginatedCases = cases.slice(startIndex, endIndex);
             
-            tableBody.innerHTML = paginatedCases.map(caseItem => `
-                <tr onclick="viewCaseDetails('${caseItem.id}')">
-                    <td style="font-family: 'JetBrains Mono', monospace; font-weight: 600;">${caseItem.id}</td>
-                    <td style="font-weight: 600;">${caseItem.title}</td>
-                    <td>
-                        <span class="case-status ${caseItem.status}" style="display: inline-flex;">
-                            <i data-lucide="${getStatusIcon(caseItem.status)}" style="width: 12px; height: 12px;"></i>
-                            ${caseItem.status.toUpperCase()}
-                        </span>
-                    </td>
-                    <td>${formatDate(caseItem.date)}</td>
-                    <td>${caseItem.investigator}</td>
-                    <td>${caseItem.evidenceCount || 0}</td>
-                    <td>
-                        ${caseItem.blockchainVerified ? `
-                            <span class="blockchain-badge" style="display: inline-flex;">
-                                <i data-lucide="shield"></i>
-                                Verified
+            tableBody.innerHTML = paginatedCases.map(caseItem => {
+                // Escape all user-provided content
+                const escapedId = escapeHtml(caseItem.id);
+                const escapedTitle = escapeHtml(caseItem.title);
+                const escapedInvestigator = escapeHtml(caseItem.investigator || caseItem.officer || 'N/A');
+                const escapedDate = escapeHtml(formatDate(caseItem.date));
+                const escapedEvidenceCount = escapeHtml(String(caseItem.evidenceCount || 0));
+                const statusIcon = getStatusIcon(caseItem.status);
+                const status = escapeHtml(caseItem.status.toUpperCase());
+                const blockchainBadge = caseItem.blockchainVerified ? 
+                    '<span class="blockchain-badge" style="display: inline-flex;"><i data-lucide="shield"></i> Verified</span>' : '—';
+                
+                return `
+                    <tr onclick="viewCaseDetails('${escapedId}')">
+                        <td style="font-family: 'JetBrains Mono', monospace; font-weight: 600;">${escapedId}</td>
+                        <td style="font-weight: 600;">${escapedTitle}</td>
+                        <td>
+                            <span class="case-status ${caseItem.status}" style="display: inline-flex;">
+                                <i data-lucide="${statusIcon}" style="width: 12px; height: 12px;"></i>
+                                ${status}
                             </span>
-                        ` : '—'}
-                    </td>
-                    <td>
-                        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); viewCaseDetails('${caseItem.id}')">
-                            <i data-lucide="eye"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
+                        </td>
+                        <td>${escapedDate}</td>
+                        <td>${escapedInvestigator}</td>
+                        <td>${escapedEvidenceCount}</td>
+                        <td>${blockchainBadge}</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); viewCaseDetails('${escapedId}')">
+                                <i data-lucide="eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
             
             lucide.createIcons();
         }
@@ -748,16 +780,32 @@
             const caseItem = casesData.find(c => c.id === caseId);
             if (!caseItem) return;
             
+            // Escape all user-provided content for modal
+            const escapedTitle = escapeHtml(caseItem.title);
+            const escapedId = escapeHtml(caseItem.id);
+            const escapedLocation = escapeHtml(caseItem.location || 'N/A');
+            const escapedInvestigator = escapeHtml(caseItem.investigator || caseItem.officer || 'N/A');
+            const escapedPriority = escapeHtml(caseItem.priority || 'N/A');
+            const escapedDate = escapeHtml(formatDate(caseItem.date));
+            const escapedEvidenceCount = escapeHtml(String(caseItem.evidenceCount || 0));
+            const escapedDescription = escapeHtml(caseItem.description || 'No description provided.');
+            const statusIcon = getStatusIcon(caseItem.status);
+            const status = escapeHtml(caseItem.status.toUpperCase());
+            const priorityColor = getPriorityColor(caseItem.priority);
+            const blockchainStatus = caseItem.blockchainVerified ? 
+                '<span style="display: inline-flex; align-items: center; gap: 6px; color: #065f46;"><i data-lucide="shield" style="width: 14px; height: 14px;"></i>Verified</span>' : 
+                '<span style="color: var(--cases-gray-500);">Pending</span>';
+            
             const modalContent = `
                 <div style="display: flex; flex-direction: column; gap: 24px;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <h3 style="font-size: 20px; font-weight: 700; color: var(--cases-gray-900);">${caseItem.title}</h3>
-                            <p style="color: var(--cases-gray-500); font-family: monospace; margin-top: 4px;">${caseItem.id}</p>
+                            <h3 style="font-size: 20px; font-weight: 700; color: var(--cases-gray-900);">${escapedTitle}</h3>
+                            <p style="color: var(--cases-gray-500); font-family: monospace; margin-top: 4px;">${escapedId}</p>
                         </div>
                         <span class="case-status ${caseItem.status}">
-                            <i data-lucide="${getStatusIcon(caseItem.status)}"></i>
-                            ${caseItem.status.toUpperCase()}
+                            <i data-lucide="${statusIcon}"></i>
+                            ${status}
                         </span>
                     </div>
                     
@@ -765,31 +813,27 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                             <div>
                                 <span style="font-size: 12px; color: var(--cases-gray-500);">Location</span>
-                                <p style="font-weight: 600; margin-top: 4px;">${caseItem.location}</p>
+                                <p style="font-weight: 600; margin-top: 4px;">${escapedLocation}</p>
                             </div>
                             <div>
                                 <span style="font-size: 12px; color: var(--cases-gray-500);">Created Date</span>
-                                <p style="font-weight: 600; margin-top: 4px;">${formatDate(caseItem.date)}</p>
+                                <p style="font-weight: 600; margin-top: 4px;">${escapedDate}</p>
                             </div>
                             <div>
                                 <span style="font-size: 12px; color: var(--cases-gray-500);">Investigator</span>
-                                <p style="font-weight: 600; margin-top: 4px;">${caseItem.investigator}</p>
+                                <p style="font-weight: 600; margin-top: 4px;">${escapedInvestigator}</p>
                             </div>
                             <div>
                                 <span style="font-size: 12px; color: var(--cases-gray-500);">Priority</span>
-                                <p style="font-weight: 600; margin-top: 4px; color: ${getPriorityColor(caseItem.priority)}">${caseItem.priority}</p>
+                                <p style="font-weight: 600; margin-top: 4px; color: ${priorityColor}">${escapedPriority}</p>
                             </div>
                             <div>
                                 <span style="font-size: 12px; color: var(--cases-gray-500);">Evidence Count</span>
-                                <p style="font-weight: 600; margin-top: 4px;">${caseItem.evidenceCount || 0} items</p>
+                                <p style="font-weight: 600; margin-top: 4px;">${escapedEvidenceCount} items</p>
                             </div>
                             <div>
                                 <span style="font-size: 12px; color: var(--cases-gray-500);">Blockchain Status</span>
-                                <p style="margin-top: 4px;">
-                                    ${caseItem.blockchainVerified ? 
-                                        '<span style="display: inline-flex; align-items: center; gap: 6px; color: #065f46;"><i data-lucide="shield" style="width: 14px; height: 14px;"></i>Verified</span>' : 
-                                        '<span style="color: var(--cases-gray-500);">Pending</span>'}
-                                </p>
+                                <p style="margin-top: 4px;">${blockchainStatus}</p>
                             </div>
                         </div>
                     </div>
@@ -797,12 +841,12 @@
                     <div>
                         <span style="font-size: 14px; font-weight: 600; color: var(--cases-gray-700);">Case Description</span>
                         <p style="margin-top: 8px; color: var(--cases-gray-600); line-height: 1.6;">
-                            ${caseItem.description || 'No description provided.'}
+                            ${escapedDescription}
                         </p>
                     </div>
                     
                     <div style="display: flex; gap: 16px; margin-top: 8px;">
-                        <button class="btn btn-primary" onclick="addEvidence('${caseItem.id}')" style="flex: 1;">
+                        <button class="btn btn-primary" onclick="addEvidence('${escapedId}')" style="flex: 1;">
                             <i data-lucide="plus"></i>
                             Add Evidence
                         </button>
@@ -822,7 +866,7 @@
         function addEvidence(caseId) {
             closeCaseModal();
             // Redirect to evidence upload with case ID
-            window.location.href = `evidence-manager.html?case=${caseId}`;
+            window.location.href = `evidence-manager.html?case=${encodeURIComponent(caseId)}`;
         }
         
         function refreshCases() {
@@ -897,7 +941,7 @@
                 align-items: center;
                 gap: 8px;
             `;
-            notification.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : type === 'error' ? 'alert-circle' : 'info'}" style="width: 18px; height: 18px;"></i>${message}`;
+            notification.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : type === 'error' ? 'alert-circle' : 'info'}" style="width: 18px; height: 18px;"></i>${escapeHtml(message)}`;
             document.body.appendChild(notification);
             lucide.createIcons();
             

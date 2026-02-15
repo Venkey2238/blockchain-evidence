@@ -175,131 +175,7 @@
             </div>
             
             <div class="cases-grid-premium" id="casesGrid">
-                <!-- Case 1 - Open -->
-                <div class="case-card-premium" data-status="open">
-                    <div class="case-header">
-                        <div>
-                            <h3 class="case-title">Burglary Investigation</h3>
-                            <span class="case-id">INV-2024-001</span>
-                        </div>
-                        <span class="status-badge open">
-                            <i data-lucide="circle" style="width: 8px; height: 8px; margin-right: 4px;"></i>
-                            OPEN
-                        </span>
-                    </div>
-                    <div class="case-details">
-                        <div class="case-detail-item">
-                            <i data-lucide="map-pin"></i>
-                            <span>Downtown Office Building, Suite 400</span>
-                        </div>
-                        <div class="case-detail-item">
-                            <i data-lucide="calendar"></i>
-                            <span>Opened March 15, 2024</span>
-                        </div>
-                        <div class="case-detail-item">
-                            <i data-lucide="user"></i>
-                            <span>Lead: Det. Johnson</span>
-                        </div>
-                        <div class="case-detail-item">
-                            <i data-lucide="file"></i>
-                            <span>Evidence Items: 7</span>
-                        </div>
-                    </div>
-                    <div class="case-actions">
-                        <button class="btn btn-primary btn-sm" onclick="viewCaseDetails('INV-2024-001')">
-                            <i data-lucide="eye"></i>
-                            View Details
-                        </button>
-                        <button class="btn btn-outline btn-sm" onclick="addEvidence('INV-2024-001')">
-                            <i data-lucide="plus"></i>
-                            Add Evidence
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Case 2 - Analyzing -->
-                <div class="case-card-premium" data-status="analyzing">
-                    <div class="case-header">
-                        <div>
-                            <h3 class="case-title">Fraud Investigation</h3>
-                            <span class="case-id">INV-2024-002</span>
-                        </div>
-                        <span class="status-badge analyzing">
-                            <i data-lucide="activity" style="width: 8px; height: 8px; margin-right: 4px;"></i>
-                            ANALYZING
-                        </span>
-                    </div>
-                    <div class="case-details">
-                        <div class="case-detail-item">
-                            <i data-lucide="map-pin"></i>
-                            <span>Financial District, 12th Floor</span>
-                        </div>
-                        <div class="case-detail-item">
-                            <i data-lucide="calendar"></i>
-                            <span>Opened March 12, 2024</span>
-                        </div>
-                        <div class="case-detail-item">
-                            <i data-lucide="user"></i>
-                            <span>Lead: Det. Smith</span>
-                        </div>
-                        <div class="case-detail-item">
-                            <i data-lucide="file"></i>
-                            <span>Evidence Items: 15</span>
-                        </div>
-                    </div>
-                    <div class="case-actions">
-                        <button class="btn btn-primary btn-sm" onclick="viewCaseDetails('INV-2024-002')">
-                            <i data-lucide="eye"></i>
-                            View Details
-                        </button>
-                        <button class="btn btn-warning btn-sm" onclick="requestAnalysis('INV-2024-002')">
-                            <i data-lucide="flask"></i>
-                            Request Analysis
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Case 3 - Closed -->
-                <div class="case-card-premium" data-status="closed">
-                    <div class="case-header">
-                        <div>
-                            <h3 class="case-title">Theft Investigation</h3>
-                            <span class="case-id">INV-2024-003</span>
-                        </div>
-                        <span class="status-badge closed">
-                            <i data-lucide="check-circle" style="width: 8px; height: 8px; margin-right: 4px;"></i>
-                            CLOSED
-                        </span>
-                    </div>
-                    <div class="case-details">
-                        <div class="case-detail-item">
-                            <i data-lucide="map-pin"></i>
-                            <span>Retail Store, Westside Mall</span>
-                        </div>
-                        <div class="case-detail-item">
-                            <i data-lucide="calendar"></i>
-                            <span>Closed March 10, 2024</span>
-                        </div>
-                        <div class="case-detail-item">
-                            <i data-lucide="user"></i>
-                            <span>Lead: Det. Davis</span>
-                        </div>
-                        <div class="case-detail-item">
-                            <i data-lucide="file"></i>
-                            <span>Evidence Items: 12</span>
-                        </div>
-                    </div>
-                    <div class="case-actions">
-                        <button class="btn btn-success btn-sm" onclick="viewReport('INV-2024-003')">
-                            <i data-lucide="file-text"></i>
-                            View Report
-                        </button>
-                        <button class="btn btn-outline btn-sm" onclick="archiveCase('INV-2024-003')">
-                            <i data-lucide="archive"></i>
-                            Archive
-                        </button>
-                    </div>
-                </div>
+                <!-- Case cards will be dynamically inserted here -->
             </div>
         </div>
         
@@ -464,6 +340,17 @@
             }
         }
         
+        // HTML escaping function to prevent XSS
+        function escapeHtml(value) {
+            if (value === undefined || value === null) return '';
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+        
         function loadInvestigationData() {
             // Load real data from localStorage
             const cases = JSON.parse(localStorage.getItem('cases') || '[]');
@@ -506,48 +393,61 @@
             const casesGrid = document.getElementById('casesGrid');
             if (!casesGrid) return;
             
-            casesGrid.innerHTML = cases.map(c => `
-                <div class="case-card-premium" data-status="${c.status.toLowerCase()}">
-                    <div class="case-header">
-                        <div>
-                            <h3 class="case-title">${c.title}</h3>
-                            <span class="case-id">${c.id}</span>
+            // Build HTML with escaped values
+            casesGrid.innerHTML = cases.map(c => {
+                // Escape all user-provided content
+                const escapedTitle = escapeHtml(c.title);
+                const escapedId = escapeHtml(c.id);
+                const escapedStatus = escapeHtml(c.status);
+                const escapedStatusLower = escapeHtml(c.status.toLowerCase());
+                const escapedLocation = escapeHtml(c.location || 'Location TBD');
+                const escapedDate = escapeHtml(c.date || 'Date TBD');
+                const escapedOfficer = escapeHtml(c.officer || 'Unassigned');
+                const escapedEvidenceCount = escapeHtml(String(c.evidenceCount || 0));
+                
+                return `
+                    <div class="case-card-premium" data-status="${escapedStatusLower}">
+                        <div class="case-header">
+                            <div>
+                                <h3 class="case-title">${escapedTitle}</h3>
+                                <span class="case-id">${escapedId}</span>
+                            </div>
+                            <span class="status-badge ${escapedStatusLower}">
+                                <i data-lucide="circle" style="width: 8px; height: 8px; margin-right: 4px;"></i>
+                                ${escapedStatus}
+                            </span>
                         </div>
-                        <span class="status-badge ${c.status.toLowerCase()}">
-                            <i data-lucide="circle" style="width: 8px; height: 8px; margin-right: 4px;"></i>
-                            ${c.status}
-                        </span>
+                        <div class="case-details">
+                            <div class="case-detail-item">
+                                <i data-lucide="map-pin"></i>
+                                <span>${escapedLocation}</span>
+                            </div>
+                            <div class="case-detail-item">
+                                <i data-lucide="calendar"></i>
+                                <span>${escapedDate}</span>
+                            </div>
+                            <div class="case-detail-item">
+                                <i data-lucide="user"></i>
+                                <span>Lead: ${escapedOfficer}</span>
+                            </div>
+                            <div class="case-detail-item">
+                                <i data-lucide="file"></i>
+                                <span>Evidence Items: ${escapedEvidenceCount}</span>
+                            </div>
+                        </div>
+                        <div class="case-actions">
+                            <button class="btn btn-primary btn-sm" onclick="viewCaseDetails('${escapedId}')">
+                                <i data-lucide="eye"></i>
+                                View Details
+                            </button>
+                            <button class="btn btn-outline btn-sm" onclick="addEvidence('${escapedId}')">
+                                <i data-lucide="plus"></i>
+                                Add Evidence
+                            </button>
+                        </div>
                     </div>
-                    <div class="case-details">
-                        <div class="case-detail-item">
-                            <i data-lucide="map-pin"></i>
-                            <span>${c.location || 'Location TBD'}</span>
-                        </div>
-                        <div class="case-detail-item">
-                            <i data-lucide="calendar"></i>
-                            <span>${c.date || 'Date TBD'}</span>
-                        </div>
-                        <div class="case-detail-item">
-                            <i data-lucide="user"></i>
-                            <span>Lead: ${c.officer || 'Unassigned'}</span>
-                        </div>
-                        <div class="case-detail-item">
-                            <i data-lucide="file"></i>
-                            <span>Evidence Items: ${c.evidenceCount || 0}</span>
-                        </div>
-                    </div>
-                    <div class="case-actions">
-                        <button class="btn btn-primary btn-sm" onclick="viewCaseDetails('${c.id}')">
-                            <i data-lucide="eye"></i>
-                            View Details
-                        </button>
-                        <button class="btn btn-outline btn-sm" onclick="addEvidence('${c.id}')">
-                            <i data-lucide="plus"></i>
-                            Add Evidence
-                        </button>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             
             // Reinitialize icons
             lucide.createIcons();
@@ -740,15 +640,32 @@
                 };
             }
             
+            // Escape all user-provided content
+            const escapedTitle = escapeHtml(caseData.title);
+            const escapedId = escapeHtml(caseData.id);
+            const escapedStatus = escapeHtml(caseData.status);
+            const escapedStatusLower = escapeHtml(caseData.status.toLowerCase());
+            const escapedLocation = escapeHtml(caseData.location);
+            const escapedDate = escapeHtml(caseData.date);
+            const escapedOfficer = escapeHtml(caseData.officer);
+            const escapedPriority = escapeHtml(caseData.priority);
+            const escapedDescription = escapeHtml(caseData.description || 'No description provided.');
+            
+            // Determine priority color
+            let priorityColor = 'var(--investigation-gray-600)';
+            if (caseData.priority === 'High') priorityColor = 'var(--investigation-red)';
+            else if (caseData.priority === 'Medium') priorityColor = '#f59e0b';
+            else if (caseData.priority === 'Low') priorityColor = '#10b981';
+            
             const modalContent = `
                 <div style="display: flex; flex-direction: column; gap: 24px;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <h3 style="font-size: 20px; font-weight: 700; color: var(--investigation-gray-900);">${caseData.title}</h3>
-                            <p style="color: var(--investigation-gray-500); font-family: monospace; margin-top: 4px;">${caseData.id}</p>
+                            <h3 style="font-size: 20px; font-weight: 700; color: var(--investigation-gray-900);">${escapedTitle}</h3>
+                            <p style="color: var(--investigation-gray-500); font-family: monospace; margin-top: 4px;">${escapedId}</p>
                         </div>
-                        <span class="status-badge ${caseData.status.toLowerCase()}">
-                            ${caseData.status}
+                        <span class="status-badge ${escapedStatusLower}">
+                            ${escapedStatus}
                         </span>
                     </div>
                     
@@ -756,19 +673,19 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                             <div>
                                 <span style="font-size: 12px; color: var(--investigation-gray-500);">Location</span>
-                                <p style="font-weight: 600; margin-top: 4px;">${caseData.location}</p>
+                                <p style="font-weight: 600; margin-top: 4px;">${escapedLocation}</p>
                             </div>
                             <div>
                                 <span style="font-size: 12px; color: var(--investigation-gray-500);">Opened</span>
-                                <p style="font-weight: 600; margin-top: 4px;">${caseData.date}</p>
+                                <p style="font-weight: 600; margin-top: 4px;">${escapedDate}</p>
                             </div>
                             <div>
                                 <span style="font-size: 12px; color: var(--investigation-gray-500);">Lead Investigator</span>
-                                <p style="font-weight: 600; margin-top: 4px;">${caseData.officer}</p>
+                                <p style="font-weight: 600; margin-top: 4px;">${escapedOfficer}</p>
                             </div>
                             <div>
                                 <span style="font-size: 12px; color: var(--investigation-gray-500);">Priority</span>
-                                <p style="font-weight: 600; margin-top: 4px; color: ${caseData.priority === 'High' ? 'var(--investigation-red)' : caseData.priority === 'Medium' ? '#f59e0b' : '#10b981'}">${caseData.priority}</p>
+                                <p style="font-weight: 600; margin-top: 4px; color: ${priorityColor}">${escapedPriority}</p>
                             </div>
                         </div>
                     </div>
@@ -776,12 +693,12 @@
                     <div>
                         <span style="font-size: 14px; font-weight: 600; color: var(--investigation-gray-700);">Case Description</span>
                         <p style="margin-top: 8px; color: var(--investigation-gray-600); line-height: 1.6;">
-                            ${caseData.description || 'No description provided.'}
+                            ${escapedDescription}
                         </p>
                     </div>
                     
                     <div style="display: flex; gap: 16px; margin-top: 8px;">
-                        <button class="btn btn-primary" onclick="addEvidence('${caseData.id}')" style="flex: 1;">
+                        <button class="btn btn-primary" onclick="addEvidence('${escapedId}')" style="flex: 1;">
                             <i data-lucide="plus"></i>
                             Add Evidence
                         </button>
@@ -806,15 +723,20 @@
         }
         
         function requestAnalysis(caseId) {
-            showToast(`🔬 Analysis request submitted for ${caseId}`, 'info');
+            showToast(`🔬 Analysis request submitted for ${escapeHtml(caseId)}`, 'info');
         }
         
         function viewReport(caseId) {
+            const escapedId = escapeHtml(caseId);
+            const reportId = 'RPT-' + caseId + '-' + Date.now().toString().slice(-6);
+            const escapedReportId = escapeHtml(reportId);
+            const currentDate = escapeHtml(new Date().toLocaleDateString());
+            
             showModal(
                 'Investigation Report',
                 `<div style="display: flex; flex-direction: column; gap: 20px;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h3 style="font-size: 18px; font-weight: 700;">Case ${caseId}</h3>
+                        <h3 style="font-size: 18px; font-weight: 700;">Case ${escapedId}</h3>
                         <span class="status-badge closed">CLOSED</span>
                     </div>
                     <div style="background: #f8fafc; padding: 20px; border-radius: 16px;">
@@ -822,11 +744,11 @@
                             <strong>Case Resolution:</strong> Investigation complete. Evidence verified on blockchain.
                         </p>
                         <p style="color: var(--investigation-gray-600); font-size: 14px;">
-                            <strong>Report ID:</strong> RPT-${caseId}-${Date.now().toString().slice(-6)}<br>
-                            <strong>Generated:</strong> ${new Date().toLocaleDateString()}
+                            <strong>Report ID:</strong> ${escapedReportId}<br>
+                            <strong>Generated:</strong> ${currentDate}
                         </p>
                     </div>
-                    <button class="btn btn-primary" onclick="downloadReport('${caseId}')">
+                    <button class="btn btn-primary" onclick="downloadReport('${escapedId}')">
                         <i data-lucide="download"></i>
                         Download Full Report
                     </button>
@@ -836,7 +758,7 @@
         
         function archiveCase(caseId) {
             if (confirm('Archive this case? All evidence will remain accessible in the archive.')) {
-                showToast(`📦 Case ${caseId} archived successfully`, 'success');
+                showToast(`📦 Case ${escapeHtml(caseId)} archived successfully`, 'success');
             }
         }
         
@@ -865,9 +787,9 @@
                 return;
             }
             
-            showToast(`🔍 Searching for "${query}"...`, 'info');
+            showToast(`🔍 Searching for "${escapeHtml(query)}"...`, 'info');
             setTimeout(() => {
-                showToast(`Found 3 results matching "${query}"`, 'success');
+                showToast(`Found 3 results matching "${escapeHtml(query)}"`, 'success');
             }, 1500);
         }
         
@@ -980,6 +902,9 @@
         
         // ===== TOAST FUNCTIONS =====
         function showToast(message, type = 'info') {
+            // Escape message to prevent XSS
+            const escapedMessage = escapeHtml(message);
+            
             const toast = document.createElement('div');
             toast.className = `toast-premium ${type}`;
             
@@ -993,7 +918,7 @@
                 </div>
                 <div class="toast-content">
                     <div class="toast-title">${type.charAt(0).toUpperCase() + type.slice(1)}</div>
-                    <div class="toast-message">${message}</div>
+                    <div class="toast-message">${escapedMessage}</div>
                 </div>
                 <button class="toast-close" onclick="this.parentElement.remove()">
                     <i data-lucide="x" style="width: 16px; height: 16px;"></i>
@@ -1011,7 +936,7 @@
         }
         
         function downloadReport(caseId) {
-            showToast(`📥 Downloading report for ${caseId}`, 'info');
+            showToast(`📥 Downloading report for ${escapeHtml(caseId)}`, 'info');
             closeModal();
         }
         

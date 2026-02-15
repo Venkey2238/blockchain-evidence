@@ -305,6 +305,17 @@
             initializeBlockchain();
         });
         
+        // HTML escaping function to prevent XSS
+        function escapeHtml(value) {
+            if (value === undefined || value === null) return '';
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+        
         async function initializeEvidenceVault() {
             try {
                 // Check authentication
@@ -340,7 +351,7 @@
                 const caseId = urlParams.get('case');
                 if (caseId) {
                     document.getElementById('caseId').value = caseId;
-                    showNotification(`📋 Case ID ${caseId} pre-filled`, 'info');
+                    showNotification(`📋 Case ID ${escapeHtml(caseId)} pre-filled`, 'info');
                 }
                 
             } catch (error) {
@@ -647,72 +658,89 @@
                 return;
             }
             
-            container.innerHTML = evidence.map(item => `
-                <div class="evidence-vault-card" onclick="viewEvidenceDetails('${item.id}')">
-                    <div class="evidence-card-header">
-                        <div class="evidence-type-icon">
-                            <i data-lucide="${getEvidenceIcon(item.type)}"></i>
-                        </div>
-                        <span class="evidence-status-badge ${item.status}">
-                            <i data-lucide="${item.status === 'verified' ? 'shield' : 'clock'}"></i>
-                            ${item.status === 'verified' ? 'VERIFIED' : 'PENDING'}
-                        </span>
-                    </div>
-                    
-                    <h3 class="evidence-file-name">${truncateFileName(item.fileName)}</h3>
-                    <div class="evidence-case-id">
-                        <i data-lucide="hash"></i>
-                        ${item.caseId}
-                    </div>
-                    
-                    <div class="evidence-metadata">
-                        <div class="evidence-meta-item">
-                            <span class="evidence-meta-label">
-                                <i data-lucide="user"></i>
-                                Uploaded By
+            // Build HTML with escaped values
+            container.innerHTML = evidence.map(item => {
+                // Escape all user-provided content
+                const escapedId = escapeHtml(item.id);
+                const escapedCaseId = escapeHtml(item.caseId);
+                const escapedFileName = escapeHtml(truncateFileName(item.fileName));
+                const escapedUploadedBy = escapeHtml(item.uploadedBy);
+                const escapedDate = escapeHtml(formatDate(item.uploadedAt));
+                const escapedFileSize = escapeHtml(formatFileSize(item.fileSize));
+                const escapedType = escapeHtml(capitalizeFirst(item.type));
+                const escapedHash = escapeHtml(item.hash || item.fileHash?.substring(0, 16) + '...' || 'N/A');
+                
+                const iconName = getEvidenceIcon(item.type);
+                const statusIcon = item.status === 'verified' ? 'shield' : 'clock';
+                const statusText = item.status === 'verified' ? 'VERIFIED' : 'PENDING';
+                
+                return `
+                    <div class="evidence-vault-card" onclick="viewEvidenceDetails('${escapedId}')">
+                        <div class="evidence-card-header">
+                            <div class="evidence-type-icon">
+                                <i data-lucide="${iconName}"></i>
+                            </div>
+                            <span class="evidence-status-badge ${item.status}">
+                                <i data-lucide="${statusIcon}"></i>
+                                ${statusText}
                             </span>
-                            <span class="evidence-meta-value">${item.uploadedBy}</span>
                         </div>
-                        <div class="evidence-meta-item">
-                            <span class="evidence-meta-label">
-                                <i data-lucide="calendar"></i>
-                                Date
-                            </span>
-                            <span class="evidence-meta-value">${formatDate(item.uploadedAt)}</span>
+                        
+                        <h3 class="evidence-file-name">${escapedFileName}</h3>
+                        <div class="evidence-case-id">
+                            <i data-lucide="hash"></i>
+                            ${escapedCaseId}
                         </div>
-                        <div class="evidence-meta-item">
-                            <span class="evidence-meta-label">
-                                <i data-lucide="hard-drive"></i>
-                                Size
-                            </span>
-                            <span class="evidence-meta-value">${formatFileSize(item.fileSize)}</span>
+                        
+                        <div class="evidence-metadata">
+                            <div class="evidence-meta-item">
+                                <span class="evidence-meta-label">
+                                    <i data-lucide="user"></i>
+                                    Uploaded By
+                                </span>
+                                <span class="evidence-meta-value">${escapedUploadedBy}</span>
+                            </div>
+                            <div class="evidence-meta-item">
+                                <span class="evidence-meta-label">
+                                    <i data-lucide="calendar"></i>
+                                    Date
+                                </span>
+                                <span class="evidence-meta-value">${escapedDate}</span>
+                            </div>
+                            <div class="evidence-meta-item">
+                                <span class="evidence-meta-label">
+                                    <i data-lucide="hard-drive"></i>
+                                    Size
+                                </span>
+                                <span class="evidence-meta-value">${escapedFileSize}</span>
+                            </div>
+                            <div class="evidence-meta-item">
+                                <span class="evidence-meta-label">
+                                    <i data-lucide="tag"></i>
+                                    Type
+                                </span>
+                                <span class="evidence-meta-value">${escapedType}</span>
+                            </div>
                         </div>
-                        <div class="evidence-meta-item">
-                            <span class="evidence-meta-label">
-                                <i data-lucide="tag"></i>
-                                Type
-                            </span>
-                            <span class="evidence-meta-value">${capitalizeFirst(item.type)}</span>
+                        
+                        <div class="evidence-hash">
+                            <i data-lucide="fingerprint"></i>
+                            <span>SHA-256: ${escapedHash}</span>
+                        </div>
+                        
+                        <div class="evidence-actions">
+                            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); verifyEvidence('${escapedId}')">
+                                <i data-lucide="shield"></i>
+                                Verify
+                            </button>
+                            <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); viewChainOfCustody('${escapedId}')">
+                                <i data-lucide="link-2"></i>
+                                Custody
+                            </button>
                         </div>
                     </div>
-                    
-                    <div class="evidence-hash">
-                        <i data-lucide="fingerprint"></i>
-                        <span>SHA-256: ${item.hash || item.fileHash?.substring(0, 16) + '...' || 'N/A'}</span>
-                    </div>
-                    
-                    <div class="evidence-actions">
-                        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); verifyEvidence('${item.id}')">
-                            <i data-lucide="shield"></i>
-                            Verify
-                        </button>
-                        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); viewChainOfCustody('${item.id}')">
-                            <i data-lucide="link-2"></i>
-                            Custody
-                        </button>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             
             lucide.createIcons();
         }
@@ -739,21 +767,39 @@
             const evidence = evidenceList.find(e => e.id === evidenceId);
             if (!evidence) return;
             
+            // Escape all user-provided content for modal
+            const escapedId = escapeHtml(evidence.id);
+            const escapedCaseId = escapeHtml(evidence.caseId);
+            const escapedFileName = escapeHtml(evidence.fileName);
+            const escapedUploadedBy = escapeHtml(evidence.uploadedBy);
+            const escapedDate = escapeHtml(formatDate(evidence.uploadedAt));
+            const escapedFileSize = escapeHtml(formatFileSize(evidence.fileSize));
+            const escapedType = escapeHtml(evidence.type);
+            const escapedCapitalizedType = escapeHtml(capitalizeFirst(evidence.type));
+            const escapedLocation = escapeHtml(evidence.location || 'Not specified');
+            const escapedDescription = escapeHtml(evidence.description || 'No description provided.');
+            const escapedFileHash = escapeHtml(evidence.fileHash || '7d3a8f9b2c1e5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b');
+            const escapedBlockchainTx = escapeHtml(evidence.blockchainTx || '0x7d3a8f9b2c1e5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b');
+            
+            const iconName = getEvidenceIcon(evidence.type);
+            const statusIcon = evidence.status === 'verified' ? 'shield' : 'clock';
+            const statusText = evidence.status === 'verified' ? 'VERIFIED' : 'PENDING';
+            
             const modalContent = `
                 <div style="display: flex; flex-direction: column; gap: 24px;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div style="display: flex; align-items: center; gap: 16px;">
                             <div style="width: 56px; height: 56px; background: var(--evidence-red-muted); border-radius: 18px; display: flex; align-items: center; justify-content: center;">
-                                <i data-lucide="${getEvidenceIcon(evidence.type)}" style="width: 28px; height: 28px; color: var(--evidence-red);"></i>
+                                <i data-lucide="${iconName}" style="width: 28px; height: 28px; color: var(--evidence-red);"></i>
                             </div>
                             <div>
-                                <h3 style="font-size: 18px; font-weight: 700; color: var(--evidence-gray-900);">${evidence.fileName}</h3>
-                                <p style="color: var(--evidence-gray-500); font-size: 13px;">${evidence.id}</p>
+                                <h3 style="font-size: 18px; font-weight: 700; color: var(--evidence-gray-900);">${escapedFileName}</h3>
+                                <p style="color: var(--evidence-gray-500); font-size: 13px;">${escapedId}</p>
                             </div>
                         </div>
                         <span class="evidence-status-badge ${evidence.status}">
-                            <i data-lucide="${evidence.status === 'verified' ? 'shield' : 'clock'}"></i>
-                            ${evidence.status.toUpperCase()}
+                            <i data-lucide="${statusIcon}"></i>
+                            ${statusText}
                         </span>
                     </div>
                     
@@ -761,27 +807,27 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                             <div>
                                 <span style="font-size: 12px; color: var(--evidence-gray-500);">Case ID</span>
-                                <p style="font-weight: 600; margin-top: 4px; font-family: monospace;">${evidence.caseId}</p>
+                                <p style="font-weight: 600; margin-top: 4px; font-family: monospace;">${escapedCaseId}</p>
                             </div>
                             <div>
                                 <span style="font-size: 12px; color: var(--evidence-gray-500);">Uploaded By</span>
-                                <p style="font-weight: 600; margin-top: 4px;">${evidence.uploadedBy}</p>
+                                <p style="font-weight: 600; margin-top: 4px;">${escapedUploadedBy}</p>
                             </div>
                             <div>
                                 <span style="font-size: 12px; color: var(--evidence-gray-500);">Upload Date</span>
-                                <p style="font-weight: 600; margin-top: 4px;">${formatDate(evidence.uploadedAt)}</p>
+                                <p style="font-weight: 600; margin-top: 4px;">${escapedDate}</p>
                             </div>
                             <div>
                                 <span style="font-size: 12px; color: var(--evidence-gray-500);">File Size</span>
-                                <p style="font-weight: 600; margin-top: 4px;">${formatFileSize(evidence.fileSize)}</p>
+                                <p style="font-weight: 600; margin-top: 4px;">${escapedFileSize}</p>
                             </div>
                             <div>
                                 <span style="font-size: 12px; color: var(--evidence-gray-500);">Evidence Type</span>
-                                <p style="font-weight: 600; margin-top: 4px; text-transform: capitalize;">${evidence.type}</p>
+                                <p style="font-weight: 600; margin-top: 4px; text-transform: capitalize;">${escapedCapitalizedType}</p>
                             </div>
                             <div>
                                 <span style="font-size: 12px; color: var(--evidence-gray-500);">Collection Location</span>
-                                <p style="font-weight: 600; margin-top: 4px;">${evidence.location || 'Not specified'}</p>
+                                <p style="font-weight: 600; margin-top: 4px;">${escapedLocation}</p>
                             </div>
                         </div>
                     </div>
@@ -789,7 +835,7 @@
                     <div>
                         <span style="font-size: 14px; font-weight: 600; color: var(--evidence-gray-700);">Description</span>
                         <p style="margin-top: 8px; color: var(--evidence-gray-600); line-height: 1.6;">
-                            ${evidence.description || 'No description provided.'}
+                            ${escapedDescription}
                         </p>
                     </div>
                     
@@ -799,7 +845,7 @@
                             <span style="font-weight: 600; color: var(--evidence-gray-800);">SHA-256 Hash</span>
                         </div>
                         <code style="display: block; background: var(--evidence-white); padding: 12px; border-radius: 12px; font-family: 'JetBrains Mono', monospace; font-size: 13px; word-break: break-all;">
-                            ${evidence.fileHash || '7d3a8f9b2c1e5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b'}
+                            ${escapedFileHash}
                         </code>
                     </div>
                     
@@ -809,7 +855,7 @@
                             <span style="font-weight: 600; color: var(--blockchain-green-dark);">Blockchain Transaction</span>
                         </div>
                         <code style="display: block; background: white; padding: 12px; border-radius: 12px; font-family: 'JetBrains Mono', monospace; font-size: 13px; word-break: break-all;">
-                            ${evidence.blockchainTx || '0x7d3a8f9b2c1e5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b'}
+                            ${escapedBlockchainTx}
                         </code>
                         <p style="margin-top: 12px; font-size: 13px; color: var(--blockchain-green-dark); display: flex; align-items: center; gap: 6px;">
                             <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i>
@@ -818,7 +864,7 @@
                     </div>
                     
                     <div style="display: flex; gap: 16px; margin-top: 8px;">
-                        <button class="btn btn-primary" onclick="downloadEvidence('${evidence.id}')" style="flex: 1;">
+                        <button class="btn btn-primary" onclick="downloadEvidence('${escapedId}')" style="flex: 1;">
                             <i data-lucide="download"></i>
                             Download File
                         </button>
@@ -839,16 +885,28 @@
             const evidence = evidenceList.find(e => e.id === evidenceId);
             if (!evidence) return;
             
+            // Escape all user-provided content for custody timeline
+            const escapedFileName = escapeHtml(evidence.fileName);
+            const escapedCaseId = escapeHtml(evidence.caseId);
+            const escapedUploadedBy = escapeHtml(evidence.uploadedBy);
+            const escapedDateTime = escapeHtml(formatDateTime(evidence.uploadedAt));
+            const escapedCurrentUser = escapeHtml(currentUser?.fullName || 'System');
+            const escapedFileHash = escapeHtml(evidence.fileHash?.substring(0, 32) + '...' || '7d3a8f9b2c1e5a6b7c8d9e0f1a2b3c4d');
+            const escapedBlockchainTx = escapeHtml(evidence.blockchainTx || '0x7d3a8f9b2c1e5a6b7c8d9e0f1a2b3c4d5e6f7a8b');
+            
+            const statusIcon = evidence.status === 'verified' ? 'shield' : 'clock';
+            const statusText = evidence.status === 'verified' ? 'VERIFIED' : 'PENDING';
+            
             const custodyContent = `
                 <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <h3 style="font-size: 16px; font-weight: 600; color: var(--evidence-gray-800);">${evidence.fileName}</h3>
-                            <p style="color: var(--evidence-gray-500); font-size: 13px;">${evidence.caseId}</p>
+                            <h3 style="font-size: 16px; font-weight: 600; color: var(--evidence-gray-800);">${escapedFileName}</h3>
+                            <p style="color: var(--evidence-gray-500); font-size: 13px;">${escapedCaseId}</p>
                         </div>
                         <span class="evidence-status-badge ${evidence.status}">
-                            <i data-lucide="${evidence.status === 'verified' ? 'shield' : 'clock'}"></i>
-                            ${evidence.status.toUpperCase()}
+                            <i data-lucide="${statusIcon}"></i>
+                            ${statusText}
                         </span>
                     </div>
                 </div>
@@ -860,9 +918,9 @@
                         </div>
                         <div class="timeline-content">
                             <h4>Evidence Uploaded</h4>
-                            <p style="margin-bottom: 8px;">${evidence.fileName} uploaded by ${evidence.uploadedBy}</p>
+                            <p style="margin-bottom: 8px;">${escapedFileName} uploaded by ${escapedUploadedBy}</p>
                             <div class="timeline-meta">
-                                <span>${formatDateTime(evidence.uploadedAt)}</span>
+                                <span>${escapedDateTime}</span>
                                 <span>•</span>
                                 <span>IP: 192.168.1.105</span>
                             </div>
@@ -876,7 +934,7 @@
                         <div class="timeline-content">
                             <h4>SHA-256 Hash Generated</h4>
                             <code style="font-size: 12px; background: var(--evidence-gray-100); padding: 4px 8px; border-radius: 4px;">
-                                ${evidence.fileHash?.substring(0, 32) + '...' || '7d3a8f9b2c1e5a6b7c8d9e0f1a2b3c4d'}
+                                ${escapedFileHash}
                             </code>
                             <div class="timeline-meta" style="margin-top: 8px;">
                                 <span>Hash verification complete</span>
@@ -892,7 +950,7 @@
                             <h4>Blockchain Timestamped</h4>
                             <p>Transaction submitted to Ethereum network</p>
                             <code style="font-size: 12px; background: var(--evidence-gray-100); padding: 4px 8px; border-radius: 4px; display: block; margin-top: 8px;">
-                                ${evidence.blockchainTx || '0x7d3a8f9b2c1e5a6b7c8d9e0f1a2b3c4d5e6f7a8b'}
+                                ${escapedBlockchainTx}
                             </code>
                             <div class="timeline-meta" style="margin-top: 8px;">
                                 <span>Block #19,423,856</span>
@@ -910,9 +968,9 @@
                             <h4>Evidence Verified</h4>
                             <p>Hash match confirmed • Evidence integrity verified</p>
                             <div class="timeline-meta">
-                                <span>${formatDateTime(new Date().toISOString())}</span>
+                                <span>${escapeHtml(formatDateTime(new Date().toISOString()))}</span>
                                 <span>•</span>
-                                <span>By: ${currentUser?.fullName || 'System'}</span>
+                                <span>By: ${escapedCurrentUser}</span>
                             </div>
                         </div>
                     </div>
@@ -948,7 +1006,8 @@
         }
         
         function downloadEvidence(evidenceId) {
-            showNotification('📥 Preparing download...', 'info');
+            const escapedId = escapeHtml(evidenceId);
+            showNotification(`📥 Preparing download for ${escapedId}...`, 'info');
             setTimeout(() => {
                 showNotification('✅ Download started', 'success');
             }, 1000);
@@ -1035,6 +1094,9 @@
         }
         
         function showNotification(message, type = 'info') {
+            // Escape message to prevent XSS
+            const escapedMessage = escapeHtml(message);
+            
             const notification = document.createElement('div');
             notification.style.cssText = `
                 position: fixed;
@@ -1060,7 +1122,7 @@
             if (type === 'success') icon = 'check-circle';
             if (type === 'error') icon = 'alert-circle';
             
-            notification.innerHTML = `<i data-lucide="${icon}" style="width: 20px; height: 20px; flex-shrink: 0;"></i>${message}`;
+            notification.innerHTML = `<i data-lucide="${icon}" style="width: 20px; height: 20px; flex-shrink: 0;"></i>${escapedMessage}`;
             document.body.appendChild(notification);
             lucide.createIcons();
             
