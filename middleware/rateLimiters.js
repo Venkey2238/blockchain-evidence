@@ -6,6 +6,7 @@ const authLimiter = rateLimit({
   windowMs: rateLimits.auth.windowMs,
   max: rateLimits.auth.max,
   message: { error: 'Too many authentication attempts, please try again later' },
+  skipSuccessfulRequests: true
 });
 
 // General API rate limiting
