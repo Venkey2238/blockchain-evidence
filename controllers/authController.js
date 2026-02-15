@@ -3,56 +3,54 @@ const { validateWalletAddress } = require('../middleware/verifyAdmin');
 
 // Wallet login
 const walletLogin = async (req, res) => {
-    try {
-        const { walletAddress } = req.body;
+  try {
+    const { walletAddress } = req.body;
 
-        if (!walletAddress) {
-            return res.status(400).json({ error: 'Wallet address is required' });
-        }
-
-        if (!validateWalletAddress(walletAddress)) {
-            return res.status(400).json({ error: 'Invalid wallet address format' });
-        }
-
-        // Get user by wallet address
-        const { data: user, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('wallet_address', walletAddress.toLowerCase())
-            .eq('is_active', true)
-            .single();
-
-        if (error || !user) {
-            return res.status(401).json({ error: 'Wallet address not registered' });
-        }
-
-        // Log login activity
-        await supabase
-            .from('activity_logs')
-            .insert({
-                user_id: user.wallet_address,
-                action: 'wallet_login',
-                details: JSON.stringify({ auth_type: 'wallet' }),
-                timestamp: new Date().toISOString()
-            });
-
-        res.json({ 
-            success: true, 
-            user: {
-                id: user.id,
-                wallet_address: user.wallet_address,
-                full_name: user.full_name,
-                role: user.role,
-                department: user.department,
-                jurisdiction: user.jurisdiction,
-                badge_number: user.badge_number,
-                auth_type: user.auth_type
-            }
-        });
-    } catch (error) {
-        console.error('Wallet login error:', error);
-        res.status(500).json({ error: 'Login failed' });
+    if (!walletAddress) {
+      return res.status(400).json({ error: 'Wallet address is required' });
     }
+
+    if (!validateWalletAddress(walletAddress)) {
+      return res.status(400).json({ error: 'Invalid wallet address format' });
+    }
+
+    // Get user by wallet address
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('wallet_address', walletAddress.toLowerCase())
+      .eq('is_active', true)
+      .single();
+
+    if (error || !user) {
+      return res.status(401).json({ error: 'Wallet address not registered' });
+    }
+
+    // Log login activity
+    await supabase.from('activity_logs').insert({
+      user_id: user.wallet_address,
+      action: 'wallet_login',
+      details: JSON.stringify({ auth_type: 'wallet' }),
+      timestamp: new Date().toISOString(),
+    });
+
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        wallet_address: user.wallet_address,
+        full_name: user.full_name,
+        role: user.role,
+        department: user.department,
+        jurisdiction: user.jurisdiction,
+        badge_number: user.badge_number,
+        auth_type: user.auth_type,
+      },
+    });
+  } catch (error) {
+    console.error('Wallet login error:', error);
+    res.status(500).json({ error: 'Login failed' });
+  }
 };
 
 // Email login
@@ -172,7 +170,10 @@ const emailRegister = async (req, res) => {
         account_type: 'real',
         created_by: 'self_registration',
         is_active: true,
-        email_verified: true,
+        is_active: true,
+        // TODO: Implement proper email verification flow (send token, verify endpoint).
+        // Currently setting strict email_verified=false to enforce verification logic in the future.
+        email_verified: false,
       })
       .select()
       .single();
@@ -211,7 +212,7 @@ const emailRegister = async (req, res) => {
     });
   } catch (error) {
     console.error('Email registration error:', error);
-    res.status(500).json({ error: 'Registration failed: ' + error.message });
+    res.status(500).json({ error: 'Registration failed' });
   }
 };
 
@@ -221,6 +222,10 @@ const walletRegister = async (req, res) => {
     const { walletAddress, fullName, role, department, jurisdiction, badgeNumber } = req.body;
 
     console.log('Wallet registration request:', { role, department, jurisdiction });
+
+    if (!walletAddress) {
+      return res.status(400).json({ error: 'Wallet address is required' });
+    }
 
     if (!validateWalletAddress(walletAddress)) {
       return res.status(400).json({ error: 'Invalid wallet address' });
@@ -304,7 +309,7 @@ const walletRegister = async (req, res) => {
     });
   } catch (error) {
     console.error('Wallet registration error:', error);
-    res.status(500).json({ error: 'Registration failed: ' + error.message });
+    res.status(500).json({ error: 'Registration failed' });
   }
 };
 
@@ -312,5 +317,5 @@ module.exports = {
   emailLogin,
   emailRegister,
   walletLogin,
-  walletRegister
+  walletRegister,
 };
