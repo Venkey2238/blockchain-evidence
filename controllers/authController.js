@@ -117,7 +117,8 @@ const emailRegister = async (req, res) => {
     try {
         const { email, password, fullName, role, department, jurisdiction } = req.body;
         
-        console.log('Email registration request:', { email, fullName, role, department, jurisdiction });
+        // Avoid logging PII (email) in production
+        console.log('Email registration request:', { role, department, jurisdiction });
 
 
         if (!email || !password || !fullName || !role) {
@@ -211,7 +212,7 @@ const emailRegister = async (req, res) => {
         });
     } catch (error) {
         console.error('Email registration error:', error);
-        res.status(500).json({ error: 'Registration failed: ' + error.message });
+        res.status(500).json({ error: 'Registration failed. Please try again later.' });
     }
 };
 
@@ -305,7 +306,7 @@ const walletRegister = async (req, res) => {
         });
     } catch (error) {
         console.error('Wallet registration error:', error);
-        res.status(500).json({ error: 'Registration failed: ' + error.message });
+        res.status(500).json({ error: 'Registration failed. Please try again later.' });
     }
 };
 
