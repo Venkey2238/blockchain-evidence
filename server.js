@@ -12,16 +12,22 @@ const { limiter } = require('./middleware/rateLimiters');
 const { setIO: setNotificationIO } = require('./services/notificationService');
 const { setIO: setNotificationControllerIO } = require('./controllers/notificationController');
 
+// ── Shared CORS origins (single source of truth) ───────────────────────────
+const allowedOrigins =
+  process.env.NODE_ENV === 'production'
+    ? (process.env.ALLOWED_ORIGINS?.split(',') || ['https://blockchain-evidence.onrender.com']).map(
+        (url) => url.trim(),
+      )
+    : ['http://localhost:3000', 'http://127.0.0.1:3000'];
+
 // ── Express + HTTP + Socket.IO ──────────────────────────────────────────────
 const app = express();
 const server = createServer(app);
 const io = new Server(server, {
-    cors: {
-        origin: process.env.NODE_ENV === 'production'
-            ? (process.env.ALLOWED_ORIGINS?.split(',') || ['https://blockchain-evidence.onrender.com']).map(url => url.trim())
-            : ['http://localhost:3000', 'http://127.0.0.1:3000'],
-        methods: ['GET', 'POST']
-    }
+  cors: {
+    origin: allowedOrigins,
+    methods: ['GET', 'POST'],
+  },
 });
 
 // Inject the io instance into services that need it
@@ -30,36 +36,31 @@ setNotificationControllerIO(io);
 
 // ── WebSocket connection handling ───────────────────────────────────────────
 io.on('connection', (socket) => {
-    console.log('User connected:', socket.id);
+  console.log('User connected:', socket.id);
 
-    socket.on('join', (walletAddress) => {
-        if (validateWalletAddress(walletAddress)) {
-            connectedUsers.set(walletAddress, socket.id);
-            socket.join(walletAddress);
-            console.log(`User ${walletAddress} joined notifications`);
-        }
-    });
+  socket.on('join', (walletAddress) => {
+    if (validateWalletAddress(walletAddress)) {
+      connectedUsers.set(walletAddress, socket.id);
+      socket.join(walletAddress);
+      console.log(`User ${walletAddress} joined notifications`);
+    }
+  });
 
-    socket.on('disconnect', () => {
-        for (const [wallet, socketId] of connectedUsers.entries()) {
-            if (socketId === socket.id) {
-                connectedUsers.delete(wallet);
-                break;
-            }
-        }
-        console.log('User disconnected:', socket.id);
-    });
+  socket.on('disconnect', () => {
+    for (const [wallet, socketId] of connectedUsers.entries()) {
+      if (socketId === socket.id) {
+        connectedUsers.delete(wallet);
+        break;
+      }
+    }
+    console.log('User disconnected:', socket.id);
+  });
 });
 
 // ── Middleware (ORDER IS CRITICAL!) ─────────────────────────────────────────
 
 // 1. CORS MUST BE FIRST
-app.use(cors({
-    origin: process.env.NODE_ENV === 'production'
-        ? (process.env.ALLOWED_ORIGINS?.split(',') || ['https://blockchain-evidence.onrender.com']).map(url => url.trim())
-        : ['http://localhost:3000', 'http://127.0.0.1:3000'],
-    credentials: true
-}));
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 
 // 2. JSON / BODY PARSER
 app.use(express.json({ limit: '50mb' }));
@@ -75,22 +76,26 @@ app.use('/api/', limiter);
 const registerRoutes = require('./routes');
 registerRoutes(app);
 
-// ── Error handling ──────────────────────────────────────────────────────────
-app.use((error, req, res, next) => {
-    console.error('Unhandled error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-});
+// ── Error handling (ORDER: 404 handler BEFORE generic error handler) ───────
 
-// 404 handler
+// 404 handler (must come BEFORE error handler — this is a regular middleware)
 app.use((req, res) => {
-    res.status(404).json({ error: 'Endpoint not found' });
+  res.status(404).json({ error: 'Endpoint not found' });
 });
 
-// ── Start server ────────────────────────────────────────────────────────────
-server.listen(PORT, () => {
+// Generic error handler (must be LAST — Express requires 4-arg signature)
+app.use((error, req, res, _next) => {
+  console.error('Unhandled error:', error);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+// ── Start server (only when run directly, not when imported for testing) ───
+if (require.main === module) {
+  server.listen(PORT, () => {
     console.log(`🔐 EVID-DGC API Server running on port ${PORT}`);
     console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
     console.log(`🔔 WebSocket notifications enabled`);
-});
+  });
+}
 
 module.exports = app;

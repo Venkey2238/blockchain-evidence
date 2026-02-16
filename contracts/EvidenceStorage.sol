@@ -67,6 +67,7 @@ contract EvidenceStorage {
     
     function authorizeUser(address _user, string memory _role) public {
         require(authorizedUsers[msg.sender], "Not authorized");
+        require(keccak256(abi.encodePacked(userRoles[msg.sender])) == keccak256(abi.encodePacked("admin")), "Only admin can authorize");
         authorizedUsers[_user] = true;
         userRoles[_user] = _role;
     }

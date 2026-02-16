@@ -3,7 +3,9 @@
 **Secure admin-controlled evidence management system with role-based access control.**
 
 > ## 🚀 **PROJECT STATUS**
+>
 > ### ✅ **PHASE 1: COMPLETE** - Core System Operational
+>
 > - 8-Role RBAC System ✅
 > - Dual Authentication (MetaMask + Email) ✅
 > - Admin Dashboard & User Management ✅
@@ -13,7 +15,9 @@
 > - Complete Documentation ✅
 >
 > ### 🔄 **PHASE 2: IN PROGRESS** - Blockchain Integration
+>
 > #### Phase 2 Primary Objectives:
+>
 > - 1. TRUE BLOCKCHAIN INTEGRATION 🔗
 > - 2. FIX ALL PHASE 1 ISSUES 🔧
 > - 3. IMPLEMENT IPFS STORAGE 📦
@@ -27,7 +31,6 @@
 [![Deployment](https://img.shields.io/badge/Deploy-Render-blue)](https://render.com/)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/11669/badge)](https://www.bestpractices.dev/projects/11669)
 
-
 <div align="center">
   <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%">
 </div>
@@ -36,22 +39,24 @@
   <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=25&pause=1000&color=36BCF7&center=true&vCenter=true&width=600&lines=Welcome+to+EVID-DGC;Secure+Blockchain+Evidence+Management;Role-Based+Access+Control;Immutable+Audit+Logs" alt="Typing SVG" />
 </div>
 
-
-
 ---
 
 ## ❓ Problem & Solution
 
 ### Problem Statement
+
 Digital evidence management often faces challenges like data tampering, lack of a verifiable chain of custody, and inconsistent access control. Traditional systems can be opaque, making it difficult for judicial and investigative bodies to trust the integrity of digital artifacts.
 
 ### Solution Overview
+
 **EVID-DGC** addresses these issues by leveraging blockchain-inspired principles and robust role-based access control. By utilizing a secure Supabase backend and providing immutable audit logs, the system ensures that every action—from evidence upload to court review—is tracked and verifiable, maintaining the highest standards of digital forensic integrity.
 
 ---
+
 ## ✨ Working Features
 
 ### Core System (Production Ready)
+
 - ✅ **8-Role RBAC** - Complete role-based access control
 - ✅ **Dual Authentication** - MetaMask wallet + Email/Password
 - ✅ **Admin Dashboard** - Full user management interface
@@ -64,6 +69,7 @@ Digital evidence management often faces challenges like data tampering, lack of 
 - ✅ **Export System** - Evidence download with watermarks
 
 ### Security Features
+
 - ✅ **Password Hashing** - SHA-256 with salt
 - ✅ **Rate Limiting** - API protection
 - ✅ **Input Validation** - XSS and injection prevention
@@ -71,12 +77,11 @@ Digital evidence management often faces challenges like data tampering, lack of 
 - ✅ **Session Management** - Secure user sessions
 
 ### Development Features
+
 - ✅ **Test Account System** - Automated test user creation
 - ✅ **Role Testing** - Easy role switching for development
 - ✅ **Health Monitoring** - System health endpoints
 - ✅ **Error Handling** - Comprehensive error management
-
-
 
 ---
 
@@ -84,21 +89,23 @@ Digital evidence management often faces challenges like data tampering, lack of 
 
 ### Tech Stack (Currently Implemented)
 
-| Category | Technologies | Status |
-|----------|-------------|--------|
-| **Frontend** | HTML5, CSS3, Vanilla JavaScript, Socket.IO Client | ✅ Working |
-| **Backend** | Node.js v16+, Express.js, Socket.IO (Real-time) | ✅ Working |
-| **Database** | Supabase (PostgreSQL with Row Level Security) | ✅ Working |
-| **Authentication** | MetaMask/Web3, Email/Password | ✅ Working |
-| **File Processing** | Multer, Sharp, PDF-Lib | ✅ Working |
-| **Icons & UI** | Lucide Icons, Custom CSS | ✅ Working |
-| **Hosting** | Render, Vercel, Netlify Compatible | ✅ Working |
-| **Smart Contracts** | Solidity (Code Ready) | ⚠️ Phase 2 |
-| **Storage** | Local/Database (IPFS Planned) | ⚠️ Phase 2 |
-| **Blockchain** | Polygon Network (Configured) | ⚠️ Phase 2 |
+| Category            | Technologies                                      | Status     |
+| ------------------- | ------------------------------------------------- | ---------- |
+| **Frontend**        | HTML5, CSS3, Vanilla JavaScript, Socket.IO Client | ✅ Working |
+| **Backend**         | Node.js v16+, Express.js, Socket.IO (Real-time)   | ✅ Working |
+| **Database**        | Supabase (PostgreSQL with Row Level Security)     | ✅ Working |
+| **Authentication**  | MetaMask/Web3, Email/Password                     | ✅ Working |
+| **File Processing** | Multer, Sharp, PDF-Lib                            | ✅ Working |
+| **Icons & UI**      | Lucide Icons, Custom CSS                          | ✅ Working |
+| **Hosting**         | Render, Vercel, Netlify Compatible                | ✅ Working |
+| **Smart Contracts** | Solidity (Code Ready)                             | ⚠️ Phase 2 |
+| **Storage**         | Local/Database (IPFS Planned)                     | ⚠️ Phase 2 |
+| **Blockchain**      | Polygon Network (Configured)                      | ⚠️ Phase 2 |
 
 ### User Roles
+
 The system implements 8 distinct roles to ensure strict access control:
+
 1. **Public Viewer**: Browse public case information.
 2. **Investigator**: Handle case creation and evidence uploads.
 3. **Forensic Analyst**: Perform technical analysis and generate reports.
@@ -267,16 +274,19 @@ blockchain-evidence/
 ### 📝 Key File Descriptions
 
 #### Core System Files
+
 - **server.js** - Express backend with Socket.IO, handles all API endpoints, authentication, file uploads, and database operations
 - **complete-database-setup-fixed.sql** - Complete PostgreSQL schema with 17+ tables, Row Level Security policies, triggers, and stored functions
 - **package.json** - Node.js dependencies (321 packages) and npm scripts for development and deployment
 
 #### Configuration & Environment
+
 - **.env.example** - Template for environment variables (Supabase URL, API keys, JWT secrets)
 - **render.yaml** - Render.com deployment configuration with build and start commands
 - **public/config.js** - Frontend configuration for API endpoints, file size limits, supported formats
 
 #### Documentation (docs/)
+
 - **USER_GUIDE.md** - Complete user manual with role-specific instructions and workflows
 - **DEVELOPER_GUIDE.md** - Development setup, architecture overview, API reference, and contribution guide
 - **SECURITY.md** - Security implementation details, best practices, and vulnerability reporting
@@ -288,6 +298,7 @@ blockchain-evidence/
 ## 📚 Documentation
 
 ### Quick Links
+
 - 🚀 [Quick Start](#-how-to-run-locally)
 - 📖 [User Guide](docs/USER_GUIDE.md)
 - 💻 [Developer Guide](docs/DEVELOPER_GUIDE.md)
@@ -298,20 +309,21 @@ blockchain-evidence/
 
 ### Complete Documentation
 
-| Topic | Description | Link |
-|-------|-------------|------|
-| **User Guide** | Role-specific guides and common tasks | [👤 User Guide](docs/USER_GUIDE.md) |
-| **Developer Guide** | Setup, architecture, and development workflow | [💻 Developer Guide](docs/DEVELOPER_GUIDE.md) |
-| **API Documentation** | Complete API reference with examples | [📡 API Docs](docs/swagger.js) |
-| **Security Guide** | Security practices and vulnerability mitigations | [🔒 Security Guide](docs/SECURITY.md) |
-| **Deployment Guide** | Deploy to Render, Vercel, or Netlify | [🚀 Deployment](docs/DEPLOYMENT.md) |
-| **Maintenance Guide** | Regular maintenance and troubleshooting | [🔧 Maintenance](docs/MAINTENANCE.md) |
+| Topic                 | Description                                      | Link                                          |
+| --------------------- | ------------------------------------------------ | --------------------------------------------- |
+| **User Guide**        | Role-specific guides and common tasks            | [👤 User Guide](docs/USER_GUIDE.md)           |
+| **Developer Guide**   | Setup, architecture, and development workflow    | [💻 Developer Guide](docs/DEVELOPER_GUIDE.md) |
+| **API Documentation** | Complete API reference with examples             | [📡 API Docs](docs/swagger.js)                |
+| **Security Guide**    | Security practices and vulnerability mitigations | [🔒 Security Guide](docs/SECURITY.md)         |
+| **Deployment Guide**  | Deploy to Render, Vercel, or Netlify             | [🚀 Deployment](docs/DEPLOYMENT.md)           |
+| **Maintenance Guide** | Regular maintenance and troubleshooting          | [🔧 Maintenance](docs/MAINTENANCE.md)         |
 
 ---
 
 ## 🚀 How to Run Locally
 
 ### Prerequisites
+
 Before you begin, ensure you have the following installed:
 
 - **Node.js** (v16 or higher) - [Download](https://nodejs.org/)
@@ -322,6 +334,7 @@ Before you begin, ensure you have the following installed:
 - **Code Editor** (VS Code recommended)
 
 ### 1. Clone Repository
+
 ```bash
 # Clone the repository
 git clone <repository-url>
@@ -331,6 +344,7 @@ cd blockchain-evidence
 ```
 
 ### 2. Install Dependencies & Setup
+
 ```bash
 # Install all required packages and run setup
 npm install
@@ -340,6 +354,7 @@ npm run setup
 ```
 
 ### 3. Environment Configuration
+
 The setup script creates a `.env` file automatically. Update it with your Supabase credentials:
 
 ```env
@@ -349,6 +364,7 @@ SUPABASE_KEY=your_supabase_anon_key
 ```
 
 ### 4. Database Setup
+
 1. Log in to your [Supabase Dashboard](https://app.supabase.com/)
 2. Create a new project or select existing one
 3. Navigate to SQL Editor
@@ -366,6 +382,7 @@ SUPABASE_KEY=your_supabase_anon_key
 ```
 
 ### 5. Start Development Server
+
 ```bash
 # Start the backend server with auto-reload
 npm run dev
@@ -377,13 +394,16 @@ npm start
 The server will start on `http://localhost:3000`
 
 ### 6. Access the Application
+
 Open your browser and navigate to:
+
 - **Main Application**: http://localhost:3000
 - **Health Check**: http://localhost:3000/api/health
 
 ### 7. Test the System
 
 #### Option 1: MetaMask Wallet Login
+
 1. Navigate to the login page
 2. Click "Connect Wallet" button
 3. MetaMask extension will popup automatically
@@ -392,35 +412,41 @@ Open your browser and navigate to:
 6. Select a role and complete registration
 
 #### Option 2: Email Login
+
 Use these pre-configured test accounts:
 
-| Email | Password | Role |
-|-------|----------|------|
-| `investigator@evid-dgc.com` | `hashed_password_123` | Investigator |
-| `analyst@evid-dgc.com` | `hashed_password_456` | Forensic Analyst |
-| `legal@evid-dgc.com` | `hashed_password_789` | Legal Professional |
-| `admin@evid-dgc.com` | `admin_password` | Administrator |
+| Email                       | Password              | Role               |
+| --------------------------- | --------------------- | ------------------ |
+| `investigator@evid-dgc.com` | `hashed_password_123` | Investigator       |
+| `analyst@evid-dgc.com`      | `hashed_password_456` | Forensic Analyst   |
+| `legal@evid-dgc.com`        | `hashed_password_789` | Legal Professional |
+| `admin@evid-dgc.com`        | `admin_password`      | Administrator      |
 
 **Note**: These are demo credentials for testing. In production, use secure passwords and proper authentication.
 
 ### Quick Troubleshooting
 
 **Issue: "Config not defined" error**
+
 - Solution: Ensure `config.js` is loaded before `app.js` in HTML
 
 **Issue: Navigation not working**
+
 - Solution: Check browser console for JavaScript errors
 - Ensure Lucide icons are loading properly
 
 **Issue: Wallet connection fails**
+
 - Solution: Install MetaMask browser extension
 - Check browser console for detailed error messages
 
 **Issue: Server won't start**
+
 - Solution: Check `.env` file exists and has correct format
 - Ensure port 3000 is not in use by another application
 
 ### Development Commands
+
 ```bash
 # Start development server
 npm start
@@ -440,7 +466,9 @@ curl http://localhost:3000/api/health
 ## 🚀 Production Deployment
 
 ### Deployment Options
+
 The application can be deployed on various platforms:
+
 - **Platform**: Render.com, Vercel, or Netlify
 - **Database**: Supabase (PostgreSQL)
 - **File Storage**: IPFS via Pinata
@@ -448,6 +476,7 @@ The application can be deployed on various platforms:
 ### Deployment Configuration
 
 #### Environment Variables Required
+
 Ensure the following environment variables are set in your production environment:
 
 ```env
@@ -472,12 +501,14 @@ BLOCKCHAIN_RPC_URL=your_rpc_url
 ### Deploy to Render
 
 #### Using Git Integration (Recommended)
+
 1. **Connect Repository**:
    - Go to [Render Dashboard](https://dashboard.render.com/)
    - Click "New +" → "Web Service"
    - Connect your GitHub repository
 
 2. **Configure Service**:
+
    ```yaml
    Name: evid-dgc
    Environment: Node
@@ -494,7 +525,6 @@ BLOCKCHAIN_RPC_URL=your_rpc_url
    - Click "Create Web Service"
    - Render will automatically deploy on every push to main branch
 
-
 ### Deploy to Netlify
 
 ```bash
@@ -510,15 +540,17 @@ netlify deploy --prod
 
 Or drag and drop the `public` folder on [Netlify Drop](https://app.netlify.com/drop).
 
-
 ### Continuous Deployment
+
 The project is configured for automatic deployment:
+
 - **Trigger**: Push to `main` branch
 - **Build**: Automatic via `npm install`
 - **Deploy**: Automatic via hosting provider
 - **Rollback**: Available through hosting dashboard
 
 ### Monitoring & Logs
+
 - **Application Logs**: Available in Render/Vercel/Netlify dashboard
 - **Database Logs**: Available in Supabase dashboard
 - **Uptime Monitoring**: Consider using services like UptimeRobot
@@ -572,6 +604,7 @@ For detailed deployment troubleshooting, see [Deployment Documentation](docs/DEP
 ### Data Flow
 
 **Evidence Upload Flow**:
+
 1. User authenticates via MetaMask or Email
 2. Role verification through RBAC system
 3. Evidence file uploaded to Express backend
@@ -583,6 +616,7 @@ For detailed deployment troubleshooting, see [Deployment Documentation](docs/DEP
 9. Real-time notification sent via Socket.IO
 
 **Access Control Flow**:
+
 1. User login → JWT token generated
 2. Each request validated against user role
 3. Supabase RLS policies enforce database security
@@ -590,27 +624,29 @@ For detailed deployment troubleshooting, see [Deployment Documentation](docs/DEP
 
 ### Key Components
 
-| Component | Technology | Purpose |
-|-----------|------------|----------|
-| **Frontend** | HTML/CSS/JS | User interface and interactions |
-| **API Server** | Express.js | REST API and business logic |
-| **WebSocket** | Socket.IO | Real-time notifications |
-| **Database** | Supabase (PostgreSQL) | Structured data storage |
-| **File Storage** | IPFS/Pinata | Decentralized evidence storage |
-| **Blockchain** | Polygon | Immutable audit trail |
-| **Authentication** | MetaMask/Supabase Auth | User authentication |
-| **Authorization** | Custom RBAC | Role-based permissions |
+| Component          | Technology             | Purpose                         |
+| ------------------ | ---------------------- | ------------------------------- |
+| **Frontend**       | HTML/CSS/JS            | User interface and interactions |
+| **API Server**     | Express.js             | REST API and business logic     |
+| **WebSocket**      | Socket.IO              | Real-time notifications         |
+| **Database**       | Supabase (PostgreSQL)  | Structured data storage         |
+| **File Storage**   | IPFS/Pinata            | Decentralized evidence storage  |
+| **Blockchain**     | Polygon                | Immutable audit trail           |
+| **Authentication** | MetaMask/Supabase Auth | User authentication             |
+| **Authorization**  | Custom RBAC            | Role-based permissions          |
 
 For detailed architecture documentation, see [Implementation Summary](docs/IMPLEMENTATION_SUMMARY.md).
 
 ---
 
 ## ⭐ Support & Star
+
 If you find this project helpful, please consider giving it a **Star**! It helps others discover the project and keeps the maintainers motivated.
 
 ---
 
 ## 💬 Suggestions & Feedback
+
 We value your feedback! If you have suggestions for new features or have found a bug, please open an issue or start a discussion in your repository.
 
 ---
@@ -682,8 +718,9 @@ Thanks to all the amazing people who have contributed to EVID-DGC! 🎉
 ### 🎖️ Recognition
 
 We recognize contributors in multiple ways:
+
 - **README Contributors Section** (above)
-- **Release Notes** for significant contributions  
+- **Release Notes** for significant contributions
 - **GitHub Contributors Page** automatic recognition
 - **Special Mentions** in project updates and social media
 
@@ -698,6 +735,7 @@ We recognize contributors in multiple ways:
 ---
 
 ## 📄 License
+
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
 ```
@@ -719,6 +757,7 @@ limitations under the License.
 ---
 
 ## 📜 Code of Conduct
+
 We are committed to providing a friendly, safe, and welcoming environment. Please review our [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ---

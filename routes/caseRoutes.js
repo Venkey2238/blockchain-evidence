@@ -1,9 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const {
-    getCases, getCaseStatuses, getEnhancedCases, createCase,
-    getCaseDetails, updateCaseStatus, getAvailableTransitions,
-    assignCase, getCaseStatistics, exportCases
+  getCases,
+  getCaseStatuses,
+  getEnhancedCases,
+  createCase,
+  getCaseDetails,
+  updateCaseStatus,
+  getAvailableTransitions,
+  assignCase,
+  getCaseStatistics,
+  exportCases,
 } = require('../controllers/caseController');
 
 // Note: /statistics and /export must be before /:id routes to avoid param conflicts

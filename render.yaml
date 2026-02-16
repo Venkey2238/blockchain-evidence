@@ -6,11 +6,11 @@ services:
     region: oregon
     branch: main
     repo: https://github.com/Gooichand/blockchain-evidence.git
-    
+
     # Build configuration
     buildCommand: npm install
     startCommand: npm start
-    
+
     # Environment variables
     envVars:
       - key: NODE_ENV
@@ -23,11 +23,11 @@ services:
         sync: false
       - key: ALLOWED_ORIGINS
         value: https://blockchain-evidence.onrender.com
-    
+
     # Health check
     healthCheckPath: /api/health
     healthCheckInterval: 30
-    
+
     # Scaling
     numInstances: 1
     maxInstances: 2

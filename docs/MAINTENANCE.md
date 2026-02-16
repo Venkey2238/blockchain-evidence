@@ -3,6 +3,7 @@
 ## Regular Maintenance Tasks
 
 ### Daily Monitoring
+
 - [ ] Check application health at `/api/health`
 - [ ] Review error logs in Render dashboard
 - [ ] Verify Supabase database connectivity
@@ -10,6 +11,7 @@
 - [ ] Check user registration/login functionality
 
 ### Weekly Tasks
+
 - [ ] Review security audit logs in `activity_logs` table
 - [ ] Check database query performance in Supabase
 - [ ] Monitor user activity and system usage
@@ -17,6 +19,7 @@
 - [ ] Verify file upload/download functionality
 
 ### Monthly Tasks
+
 - [ ] Update Node.js dependencies (after testing)
 - [ ] Analyze system usage metrics
 - [ ] Review and optimize slow database queries
@@ -25,6 +28,7 @@
 - [ ] Review user feedback and issues
 
 ### Quarterly Tasks
+
 - [ ] Full security audit
 - [ ] Disaster recovery drill
 - [ ] Performance review and optimization
@@ -34,13 +38,16 @@
 ## Backup Procedures
 
 ### Database Backups
+
 **Supabase Automatic Backups**:
+
 - Daily automatic backups enabled
 - Point-in-time recovery available
 - Backups retained for 7 days (free tier)
 - Manual backup before major changes
 
 **Manual Backup Process**:
+
 1. Go to Supabase Dashboard
 2. Navigate to Settings → Database
 3. Click "Create Backup"
@@ -48,11 +55,13 @@
 5. Store securely with date stamp
 
 ### Code Backups
+
 - Primary: GitHub repository
 - Releases: Tagged versions for major updates
 - Local: Development environment copies
 
 ### Configuration Backups
+
 - Environment variables documented
 - Database schema in `complete-database-setup-fixed.sql`
 - Deployment configuration in `render.yaml`
@@ -60,6 +69,7 @@
 ## Recovery Procedures
 
 ### Database Recovery
+
 1. **Identify Issue**: Check error logs and symptoms
 2. **Stop Application**: Prevent further data corruption
 3. **Assess Damage**: Determine extent of data loss
@@ -69,6 +79,7 @@
 7. **Test Functionality**: Verify all features working
 
 ### Application Recovery
+
 1. **Identify Failed Deployment**: Check Render logs
 2. **Rollback Code**: Revert to last working commit
 3. **Redeploy**: Push to main branch for auto-deploy
@@ -77,6 +88,7 @@
 6. **Monitor**: Watch for recurring issues
 
 ### Full System Recovery
+
 **Recovery Time Objective (RTO)**: < 2 hours
 **Recovery Point Objective (RPO)**: < 24 hours
 
@@ -107,18 +119,21 @@
 ### Key Metrics to Monitor
 
 **Application Performance**:
+
 - Response time < 2 seconds
 - Error rate < 1%
 - Uptime > 99.5%
 - Memory usage < 80%
 
 **Database Performance**:
+
 - Query response time < 500ms
 - Connection pool usage < 80%
 - Storage usage monitoring
 - Index performance
 
 **User Experience**:
+
 - Login success rate > 98%
 - File upload success rate > 95%
 - Page load time < 3 seconds
@@ -126,24 +141,26 @@
 ### Performance Optimization
 
 **Database Optimization**:
+
 ```sql
 -- Regular maintenance queries
 ANALYZE;
 VACUUM;
 
 -- Check slow queries
-SELECT query, mean_time, calls 
-FROM pg_stat_statements 
-ORDER BY mean_time DESC 
+SELECT query, mean_time, calls
+FROM pg_stat_statements
+ORDER BY mean_time DESC
 LIMIT 10;
 
 -- Index usage analysis
-SELECT schemaname, tablename, attname, n_distinct, correlation 
-FROM pg_stats 
+SELECT schemaname, tablename, attname, n_distinct, correlation
+FROM pg_stats
 WHERE schemaname = 'public';
 ```
 
 **Application Optimization**:
+
 - Monitor memory leaks
 - Optimize file upload processing
 - Review API endpoint performance
@@ -152,19 +169,23 @@ WHERE schemaname = 'public';
 ## Security Maintenance
 
 ### Security Monitoring
+
 - Review `activity_logs` for suspicious activity
 - Monitor failed login attempts
 - Check for unusual file upload patterns
 - Verify admin action logs
 
 ### Security Updates
+
 - Keep Node.js dependencies updated
 - Monitor security advisories
 - Apply security patches promptly
 - Review and update access controls
 
 ### Security Audits
+
 **Monthly Security Checklist**:
+
 - [ ] Review user access permissions
 - [ ] Check for inactive accounts
 - [ ] Verify admin account security
@@ -175,23 +196,28 @@ WHERE schemaname = 'public';
 ## System Scaling
 
 ### Scaling Triggers
+
 - Memory usage > 80% consistently
 - Database connections > 80% of pool
 - API response time > 2 seconds
 - Error rate > 2%
 
 ### Scaling Actions
+
 **Vertical Scaling** (Render):
+
 1. Upgrade to higher tier plan
 2. Increase memory allocation
 3. Monitor performance improvement
 
 **Database Scaling** (Supabase):
+
 1. Upgrade to Pro plan if needed
 2. Increase connection pool size
 3. Add read replicas for read-heavy workloads
 
 **Horizontal Scaling** (Future):
+
 - Load balancer configuration
 - Multiple application instances
 - Database sharding (if needed)
@@ -199,6 +225,7 @@ WHERE schemaname = 'public';
 ## Troubleshooting Common Issues
 
 ### Application Won't Start
+
 1. Check environment variables
 2. Verify database connectivity
 3. Review startup logs
@@ -206,6 +233,7 @@ WHERE schemaname = 'public';
 5. Verify Node.js version compatibility
 
 ### Database Connection Issues
+
 1. Verify Supabase project status
 2. Check connection string format
 3. Test network connectivity
@@ -213,6 +241,7 @@ WHERE schemaname = 'public';
 5. Check for database maintenance
 
 ### File Upload Failures
+
 1. Check file size limits (100MB)
 2. Verify supported file types
 3. Test with smaller files
@@ -220,6 +249,7 @@ WHERE schemaname = 'public';
 5. Check multer configuration
 
 ### Performance Issues
+
 1. Check database query performance
 2. Monitor memory usage
 3. Review API response times
@@ -229,6 +259,7 @@ WHERE schemaname = 'public';
 ## Maintenance Scripts
 
 ### Health Check Script
+
 ```bash
 #!/bin/bash
 # health-check.sh
@@ -237,6 +268,7 @@ echo "Health check passed"
 ```
 
 ### Database Maintenance Script
+
 ```sql
 -- maintenance.sql
 -- Run monthly for database optimization
@@ -246,6 +278,7 @@ REINDEX DATABASE your_database_name;
 ```
 
 ### Log Cleanup Script
+
 ```bash
 #!/bin/bash
 # cleanup-logs.sh
@@ -256,12 +289,14 @@ REINDEX DATABASE your_database_name;
 ## Documentation Maintenance
 
 ### Keep Updated
+
 - API documentation when endpoints change
 - User guides when features change
 - Security procedures when policies change
 - Deployment guides when infrastructure changes
 
 ### Review Schedule
+
 - Monthly: User guides and troubleshooting
 - Quarterly: All documentation
 - After major releases: All affected documentation
@@ -269,6 +304,7 @@ REINDEX DATABASE your_database_name;
 ## Emergency Procedures
 
 ### System Down Emergency
+
 1. **Immediate Response** (5 minutes):
    - Check Render dashboard status
    - Verify Supabase status
@@ -290,6 +326,7 @@ REINDEX DATABASE your_database_name;
    - Document incident
 
 ### Data Breach Response
+
 1. **Immediate Containment**:
    - Disable affected accounts
    - Block suspicious IP addresses
@@ -308,16 +345,19 @@ REINDEX DATABASE your_database_name;
 ## Contact Information
 
 ### Emergency Contacts
+
 - **System Administrator**: admin@evid-dgc.com
 - **Technical Support**: DGC2MHNE@proton.me
 - **Security Issues**: GitHub repository issues
 
 ### Service Providers
+
 - **Hosting**: Render.com support
 - **Database**: Supabase support
 - **Domain**: DNS provider support
 
 ### Escalation Procedures
+
 1. Technical issues → System Administrator
 2. Security issues → Immediate escalation
 3. Service outages → All stakeholders

@@ -1,13 +1,12 @@
 # 🤝 Contributing to EVID-DGC
 
-
-**To know understand how EVID-DGC works see this Youtube video**
+**To understand how EVID-DGC works see this YouTube video**
 
 YT English --- https://youtu.be/kN0cb3W8CuM
 
 YT Hindi-- https://youtu.be/rMMn96qQSYI
 
-YT Telugu -- https://youtu.be/qLFbRyZmbkw 
+YT Telugu -- https://youtu.be/qLFbRyZmbkw
 
 LIVE link Project --https://blockchain-evidence.onrender.com/
 
@@ -32,17 +31,20 @@ Thank you for your interest in contributing to EVID-DGC! We welcome contribution
 
 1. **Fork the repository** on GitHub
 2. **Clone your fork** locally:
+
    ```bash
    git clone https://github.com/YOUR-USERNAME/blockchain-evidence.git
    cd blockchain-evidence
    ```
 
 3. **Install dependencies**:
+
    ```bash
    npm install
    ```
 
 4. **Set up environment**:
+
    ```bash
    cp .env.example .env
    # ⚠️ IMPORTANT: Edit .env with your Supabase credentials (see detailed steps below)
@@ -106,12 +108,14 @@ Thank you for your interest in contributing to EVID-DGC! We welcome contribution
 **⚠️ FILE NAMING CRITICAL**
 
 Your environment file **MUST** be named exactly `.env` (with a leading dot). Common mistakes:
+
 - ❌ `env` (missing dot)
 - ❌ `env.txt` (wrong extension)
 - ❌ `.env.txt` (wrong extension)
 - ✅ `.env` (correct)
 
 1. **Create your environment file**:
+
    ```bash
    cp .env.example .env
    ```
@@ -119,15 +123,15 @@ Your environment file **MUST** be named exactly `.env` (with a leading dot). Com
 2. **Edit the .env file**:
    - Open `.env` in your code editor
    - Replace placeholder values with your actual credentials:
-   
+
    ```bash
    # Replace with your actual Project URL from Step 2
    SUPABASE_URL=https://xxxxx.supabase.co
-   
+
    # Replace with your actual anon public key from Step 2
    SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
    ```
-   
+
    > **Note**: The anon key is very long (200+ characters). Make sure you copy the entire string.
 
 3. **Save the file** in the project root directory
@@ -223,6 +227,7 @@ git push origin feature/your-feature-name
 ```
 
 Then create a Pull Request on GitHub with:
+
 - Clear title and description
 - Reference any related issues
 - Screenshots/videos if applicable
@@ -274,16 +279,16 @@ let currentUser = null;
 
 // Use descriptive function names
 async function handleEmailLogin(email, password) {
-    // Function implementation
+  // Function implementation
 }
 
 // Use proper error handling
 try {
-    const response = await fetch('/api/auth/login');
-    const data = await response.json();
+  const response = await fetch('/api/auth/login');
+  const data = await response.json();
 } catch (error) {
-    console.error('Login failed:', error);
-    showAlert('Login failed. Please try again.', 'error');
+  console.error('Login failed:', error);
+  showAlert('Login failed. Please try again.', 'error');
 }
 ```
 
@@ -292,18 +297,16 @@ try {
 ```html
 <!-- Use semantic HTML -->
 <main id="main-content">
-    <section class="login-section">
-        <h2>Login Options</h2>
-        <form id="loginForm">
-            <!-- Form content -->
-        </form>
-    </section>
+  <section class="login-section">
+    <h2>Login Options</h2>
+    <form id="loginForm">
+      <!-- Form content -->
+    </form>
+  </section>
 </main>
 
 <!-- Include accessibility attributes -->
-<button aria-label="Connect MetaMask wallet" onclick="connectWallet()">
-    Connect Wallet
-</button>
+<button aria-label="Connect MetaMask wallet" onclick="connectWallet()">Connect Wallet</button>
 ```
 
 ### CSS Guidelines
@@ -311,21 +314,21 @@ try {
 ```css
 /* Use BEM methodology for class names */
 .card {
-    /* Block */
+  /* Block */
 }
 
 .card__header {
-    /* Element */
+  /* Element */
 }
 
 .card--featured {
-    /* Modifier */
+  /* Modifier */
 }
 
 /* Use CSS custom properties */
 :root {
-    --primary-color: #3b82f6;
-    --secondary-color: #64748b;
+  --primary-color: #3b82f6;
+  --secondary-color: #64748b;
 }
 ```
 
@@ -334,19 +337,19 @@ try {
 ```javascript
 // Use proper HTTP status codes
 app.post('/api/auth/login', async (req, res) => {
-    try {
-        // Success
-        res.status(200).json({ success: true, user });
-    } catch (error) {
-        // Client error
-        res.status(400).json({ error: 'Invalid credentials' });
-    }
+  try {
+    // Success
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    // Client error
+    res.status(400).json({ error: 'Invalid credentials' });
+  }
 });
 
 // Validate input data
 const { email, password } = req.body;
 if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password required' });
+  return res.status(400).json({ error: 'Email and password required' });
 }
 ```
 
@@ -368,10 +371,10 @@ Use these pre-configured accounts for testing:
 ```javascript
 // Email accounts (any password works)
 const testAccounts = [
-    { email: 'admin@evid-dgc.com', role: 'administrator' },
-    { email: 'investigator@evid-dgc.com', role: 'investigator' },
-    { email: 'analyst@evid-dgc.com', role: 'forensic_analyst' },
-    { email: 'legal@evid-dgc.com', role: 'legal_professional' }
+  { email: 'admin@evid-dgc.com', role: 'administrator' },
+  { email: 'investigator@evid-dgc.com', role: 'investigator' },
+  { email: 'analyst@evid-dgc.com', role: 'forensic_analyst' },
+  { email: 'legal@evid-dgc.com', role: 'legal_professional' },
 ];
 ```
 
@@ -388,7 +391,7 @@ const testAccounts = [
  * @throws {Error} When authentication fails
  */
 async function handleEmailLogin(email, password) {
-    // Implementation
+  // Implementation
 }
 ```
 
@@ -399,15 +402,15 @@ Document all API endpoints:
 ```javascript
 /**
  * POST /api/auth/email-login
- * 
+ *
  * Authenticates user with email and password
- * 
+ *
  * Request Body:
  * {
  *   "email": "user@example.com",
  *   "password": "userpassword"
  * }
- * 
+ *
  * Response:
  * {
  *   "success": true,
@@ -428,6 +431,7 @@ When reporting bugs, please include:
 A clear description of what the bug is.
 
 **Steps to Reproduce**
+
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
@@ -443,6 +447,7 @@ What actually happened.
 If applicable, add screenshots.
 
 **Environment**
+
 - OS: [e.g. Windows 10]
 - Browser: [e.g. Chrome 91]
 - Node.js version: [e.g. 16.14.0]
@@ -499,6 +504,7 @@ We're particularly interested in:
 ### Issue: "Cannot connect to Supabase"
 
 **Check these:**
+
 - [ ] `.env` file exists in project root (not `.env.txt` or `env`)
 - [ ] `SUPABASE_URL` matches your project URL exactly
 - [ ] `SUPABASE_KEY` is the **anon public** key (not service_role)
@@ -506,6 +512,7 @@ We're particularly interested in:
 - [ ] Server was restarted after editing `.env`
 
 **Verify your .env:**
+
 ```bash
 # Linux/Mac
 cat .env
@@ -517,6 +524,7 @@ type .env
 ### Issue: "Database tables don't exist"
 
 **Solution:**
+
 1. Go to Supabase → SQL Editor
 2. Click "New query"
 3. Copy all code from `complete-database-setup.sql`
@@ -526,6 +534,7 @@ type .env
 ### Issue: "npm install fails"
 
 **Try:**
+
 ```bash
 # Clear cache and retry
 npm cache clean --force
@@ -539,6 +548,7 @@ npm install
 ### Issue: "Port already in use"
 
 **Solution:**
+
 ```bash
 # Find and kill process using port 3000
 # Linux/Mac:

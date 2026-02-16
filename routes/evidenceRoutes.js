@@ -3,12 +3,25 @@ const router = express.Router();
 const { exportLimiter } = require('../middleware/rateLimiters');
 const upload = require('../middleware/upload');
 const {
-    uploadEvidence, downloadEvidence, bulkExport, getDownloadHistory,
-    getAllEvidence, getEvidenceById, verifyEvidenceHash, getBlockchainProof,
-    verifyIntegrity, generateVerificationCertificate, publicVerify,
-    getVerificationHistory, getEvidenceExpiry, setLegalHold,
-    bulkRetentionPolicy, checkExpiry, compareEvidence,
-    createComparisonReport, getEvidenceByCase
+  uploadEvidence,
+  downloadEvidence,
+  bulkExport,
+  getDownloadHistory,
+  getAllEvidence,
+  getEvidenceById,
+  verifyEvidenceHash,
+  getBlockchainProof,
+  verifyIntegrity,
+  generateVerificationCertificate,
+  publicVerify,
+  getVerificationHistory,
+  getEvidenceExpiry,
+  setLegalHold,
+  bulkRetentionPolicy,
+  checkExpiry,
+  compareEvidence,
+  createComparisonReport,
+  getEvidenceByCase,
 } = require('../controllers/evidenceController');
 
 // ── Static paths MUST come before /evidence/:id to avoid param conflicts ────

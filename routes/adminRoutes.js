@@ -3,9 +3,15 @@ const router = express.Router();
 const { adminLimiter } = require('../middleware/rateLimiters');
 const { verifyAdmin } = require('../middleware/verifyAdmin');
 const {
-    createUser, createAdmin, deleteUser, getAllUsers,
-    roleChangeRequest, getRoleChangeRequests,
-    approveRoleChange, rejectRoleChange, blockUnauthorizedAdmin
+  createUser,
+  createAdmin,
+  deleteUser,
+  getAllUsers,
+  roleChangeRequest,
+  getRoleChangeRequests,
+  approveRoleChange,
+  rejectRoleChange,
+  blockUnauthorizedAdmin,
 } = require('../controllers/adminController');
 
 router.post('/admin/create-user', adminLimiter, verifyAdmin, createUser);

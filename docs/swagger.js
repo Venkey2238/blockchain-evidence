@@ -11,10 +11,10 @@ const options = {
     },
     servers: [
       { url: 'http://localhost:3000/api', description: 'Development' },
-      { url: 'https://blockchain-evidence.onrender.com/api', description: 'Production' }
-    ]
+      { url: 'https://blockchain-evidence.onrender.com/api', description: 'Production' },
+    ],
   },
-  apis: ['./server.js']
+  apis: ['./server.js'],
 };
 
 const specs = swaggerJsdoc(options);
@@ -25,9 +25,9 @@ specs.paths = {
     get: {
       summary: 'Health check',
       responses: {
-        200: { description: 'Server healthy' }
-      }
-    }
+        200: { description: 'Server healthy' },
+      },
+    },
   },
   '/auth/email-login': {
     post: {
@@ -38,17 +38,17 @@ specs.paths = {
             schema: {
               properties: {
                 email: { type: 'string' },
-                password: { type: 'string' }
-              }
-            }
-          }
-        }
+                password: { type: 'string' },
+              },
+            },
+          },
+        },
       },
       responses: {
         200: { description: 'Login successful' },
-        401: { description: 'Invalid credentials' }
-      }
-    }
+        401: { description: 'Invalid credentials' },
+      },
+    },
   },
   '/evidence/upload': {
     post: {
@@ -60,25 +60,25 @@ specs.paths = {
               properties: {
                 file: { type: 'string', format: 'binary' },
                 caseId: { type: 'string' },
-                type: { type: 'string' }
-              }
-            }
-          }
-        }
+                type: { type: 'string' },
+              },
+            },
+          },
+        },
       },
       responses: {
-        200: { description: 'Upload successful' }
-      }
-    }
+        200: { description: 'Upload successful' },
+      },
+    },
   },
   '/admin/users': {
     get: {
       summary: 'Get users (Admin)',
       responses: {
-        200: { description: 'Users list' }
-      }
-    }
-  }
+        200: { description: 'Users list' },
+      },
+    },
+  },
 };
 
 module.exports = { specs, swaggerUi };

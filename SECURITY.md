@@ -76,6 +76,7 @@ This security policy applies to:
 ### Vulnerability Categories
 
 #### Critical Severity
+
 - Remote Code Execution (RCE)
 - SQL Injection leading to data breach
 - Authentication bypass
@@ -83,6 +84,7 @@ This security policy applies to:
 - Mass data exposure
 
 #### High Severity
+
 - Cross-Site Scripting (XSS)
 - Cross-Site Request Forgery (CSRF)
 - Insecure Direct Object References
@@ -90,6 +92,7 @@ This security policy applies to:
 - Broken access controls
 
 #### Medium Severity
+
 - Information disclosure
 - Denial of Service (DoS)
 - Weak cryptography
@@ -97,6 +100,7 @@ This security policy applies to:
 - Missing security headers
 
 #### Low Severity
+
 - Information leakage
 - Weak password policies
 - Missing rate limiting
@@ -195,7 +199,7 @@ For critical security issues requiring immediate attention:
 
 We thank the following security researchers who have helped improve EVID-DGC:
 
-*No security issues have been reported yet.*
+_No security issues have been reported yet._
 
 ### Hall of Fame
 

@@ -58,33 +58,39 @@ npm run health            # Check server health
 ## API Endpoints (Working)
 
 ### Authentication
+
 - `POST /api/auth/email-login` - Email login
-- `POST /api/auth/email-register` - Email registration  
+- `POST /api/auth/email-register` - Email registration
 - `POST /api/auth/wallet-register` - Wallet registration
 
 ### Evidence Management
+
 - `POST /api/evidence/upload` - Upload evidence file
 - `POST /api/evidence/{id}/download` - Download with watermark
 - `POST /api/evidence/bulk-export` - Bulk ZIP export
 - `POST /api/evidence/verify-integrity` - Verify file integrity
 
 ### User Management
+
 - `GET /api/user/{wallet}` - Get user by wallet
 - `PUT /api/user/profile/{id}` - Update profile
 
 ### Admin (Admin only)
+
 - `GET /api/admin/users` - List all users
 - `POST /api/admin/create-user` - Create new user
 - `POST /api/admin/create-admin` - Create admin user
 - `POST /api/admin/delete-user` - Deactivate user
 
 ### System
+
 - `GET /api/health` - Health check
 - `GET /api/notifications/{wallet}` - Get notifications
 
 ## Architecture
 
 ### Backend (server.js)
+
 - Express.js with Socket.IO
 - Multer for file uploads
 - Supabase for database
@@ -92,12 +98,14 @@ npm run health            # Check server health
 - Role-based access control
 
 ### Frontend
+
 - Vanilla JavaScript
 - Lucide icons
 - MetaMask integration
 - Responsive CSS
 
 ### Database (Supabase)
+
 - PostgreSQL with Row Level Security
 - 17+ tables for users, cases, evidence
 - Triggers and functions
@@ -115,6 +123,7 @@ npm run health            # Check server health
 ## Testing
 
 ### Manual Testing
+
 1. Start server: `npm start`
 2. Open http://localhost:3000
 3. Test login flows (email/wallet)
@@ -122,23 +131,27 @@ npm run health            # Check server health
 5. Test admin functions
 
 ### Test Accounts
+
 - Admin: `admin@evid-dgc.com` / `admin_password`
 - Investigator: `investigator@evid-dgc.com` / `hashed_password_123`
 
 ## File Upload System
 
 ### Supported Formats
+
 - Images: JPEG, PNG, GIF
-- Videos: MP4, AVI, MOV  
+- Videos: MP4, AVI, MOV
 - Audio: MP3, WAV, M4A
 - Documents: PDF, DOC, DOCX, TXT
 - Archives: ZIP, RAR
 
 ### Size Limits
+
 - Maximum: 100MB per file
 - Configurable in server.js
 
 ### Processing
+
 - Sharp for image processing
 - PDF-lib for PDF watermarking
 - Archiver for ZIP creation
@@ -146,17 +159,20 @@ npm run health            # Check server health
 ## Security Features
 
 ### Authentication
+
 - MetaMask wallet verification
 - Email/password with hashing
 - Session management
 - Rate limiting
 
-### Authorization  
+### Authorization
+
 - Role-based access control
 - Row Level Security in database
 - Admin-only endpoints protected
 
 ### Data Protection
+
 - Input validation
 - SQL injection prevention
 - XSS protection
@@ -165,6 +181,7 @@ npm run health            # Check server health
 ## Deployment
 
 ### Render.com (Recommended)
+
 1. Connect GitHub repository
 2. Set environment variables
 3. Build: `npm install`
@@ -172,6 +189,7 @@ npm run health            # Check server health
 5. Auto-deploy on push to main
 
 ### Environment Variables for Production
+
 ```env
 SUPABASE_URL=production_url
 SUPABASE_KEY=production_key
@@ -182,17 +200,20 @@ ALLOWED_ORIGINS=https://yourdomain.com
 ## Troubleshooting
 
 ### Common Issues
+
 - **Config not defined**: Ensure config.js loads before app.js
 - **Database connection**: Check Supabase credentials
 - **File upload fails**: Check file size and format
 - **MetaMask issues**: Ensure extension installed
 
 ### Debug Mode
+
 ```bash
 DEBUG=* npm start  # Enable all debug logs
 ```
 
 ### Logs
+
 - Server logs in console
 - Database logs in Supabase dashboard
 - Browser console for frontend issues
@@ -209,7 +230,7 @@ DEBUG=* npm start  # Enable all debug logs
 ## Code Style
 
 - Use semicolons
-- 2-space indentation  
+- 2-space indentation
 - camelCase for variables
 - Descriptive function names
 - Comment complex logic

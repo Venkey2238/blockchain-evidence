@@ -1,6 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { getAllTags, createTag, addTagsToEvidence, removeTagFromEvidence, batchTag, filterByTags, suggestTags } = require('../controllers/tagController');
+const {
+  getAllTags,
+  createTag,
+  addTagsToEvidence,
+  removeTagFromEvidence,
+  batchTag,
+  filterByTags,
+  suggestTags,
+} = require('../controllers/tagController');
 
 router.get('/tags', getAllTags);
 router.post('/tags', createTag);
