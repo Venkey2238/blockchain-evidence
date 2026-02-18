@@ -312,26 +312,27 @@ function setupModalClickOutside(modalId, closeFunction) {
 
 // Toggle password visibility
 function togglePasswordVisibility(inputId) {
-  const input = document.getElementById(inputId);
-  const toggleBtn = document.querySelector(`button[onclick="togglePasswordVisibility('${inputId}')"]`);
+    const input = document.getElementById(inputId);
+    if (!input) return;
 
-  if (!input || !toggleBtn) return;
+    const wrapper = input.closest('.password-input-wrapper');
+    if(!wrapper)
+      return;
+    const toggleBtn = wrapper.querySelector('.password-toggle-btn');
+    if(!toggle)
+      return ;
+    const icon = toggleBtn.querySelector('svg');
 
-  const icon = toggleBtn.querySelector('i');
+    const isPassword = input.type === "password";
+    input.type = isPassword ? "text" : "password";
 
-  if (input.type === 'password') {
-    input.type = 'text';
     if (icon) {
-      icon.setAttribute('data-lucide', 'eye-off');
-      lucide.createIcons();
+        icon.setAttribute(
+            "data-lucide",
+            isPassword ? "eye-off" : "eye"
+        );
+        lucide.createIcons();
     }
-  } else {
-    input.type = 'password';
-    if (icon) {
-      icon.setAttribute('data-lucide', 'eye');
-      lucide.createIcons();
-    }
-  }
 }
 
 // Wallet connection
@@ -726,20 +727,29 @@ function initializeNavigation() {
       navMenu.classList.toggle("active");
 
       const icon = menuToggle.querySelector("i");
+     if(icon){
       if (navMenu.classList.contains("active")) {
         icon.setAttribute("data-lucide", "x");
       } else {
         icon.setAttribute("data-lucide", "menu");
       }
       lucide.createIcons();
+     }
+         
     });
 
     document.addEventListener("click", (e) => {
       if (!menuToggle.contains(e.target) && !navMenu.contains(e.target)) {
         navMenu.classList.remove("active");
-        const icon = menuToggle.querySelector("i");
-        icon.setAttribute("data-lucide", "menu");
+        const icon = menuToggle.querySelector("svg");
+        if(icon){
+            icon.setAttribute("data-lucide", "menu");
         lucide.createIcons();
+        }
+        
+      
+        
+        
       }
     });
   }
