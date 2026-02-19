@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { exportLimiter } = require('../middleware/rateLimiters');
+const { exportLimiter, uploadLimiter, verificationLimiter } = require('../middleware/rateLimiters');
 const upload = require('../middleware/upload');
 const {
   uploadEvidence,
@@ -28,7 +28,7 @@ const {
 
 // Evidence list & bulk operations
 router.get('/evidence', getAllEvidence);
-router.post('/evidence/upload', exportLimiter, upload.single('file'), uploadEvidence);
+router.post('/evidence/upload', uploadLimiter, upload.single('file'), uploadEvidence);
 router.post('/evidence/bulk-export', bulkExport);
 router.post('/evidence/bulk-retention', bulkRetentionPolicy);
 router.post('/evidence/check-expiry', checkExpiry);
@@ -37,7 +37,7 @@ router.post('/evidence/check-expiry', checkExpiry);
 router.get('/evidence/expiry', getEvidenceExpiry);
 router.get('/evidence/compare', compareEvidence);
 router.get('/evidence/verification-history', getVerificationHistory);
-router.post('/evidence/verify-integrity', verifyIntegrity);
+router.post('/evidence/verify-integrity', verificationLimiter, verifyIntegrity);
 router.post('/evidence/verification-certificate', generateVerificationCertificate);
 router.post('/evidence/comparison-report', createComparisonReport);
 
@@ -53,7 +53,7 @@ router.get('/verify/:hash', publicVerify);
 router.get('/evidence/:id', getEvidenceById);
 router.post('/evidence/:id/download', downloadEvidence);
 router.get('/evidence/:id/download-history', getDownloadHistory);
-router.get('/evidence/:id/verify', verifyEvidenceHash);
+router.get('/evidence/:id/verify', verificationLimiter, verifyEvidenceHash);
 router.get('/evidence/:id/blockchain-proof', getBlockchainProof);
 router.put('/evidence/:id/legal-hold', setLegalHold);
 

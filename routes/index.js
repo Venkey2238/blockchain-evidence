@@ -8,6 +8,8 @@ const tagRoutes = require('./tagRoutes');
 const retentionRoutes = require('./retentionRoutes');
 const caseRoutes = require('./caseRoutes');
 const activityRoutes = require('./activityRoutes');
+const blockchainRoutes = require('./blockchainRoutes');
+const monitoringRoutes = require('./monitoringRoutes');
 
 function registerRoutes(app) {
   app.use('/api', healthRoutes);
@@ -20,6 +22,8 @@ function registerRoutes(app) {
   app.use('/api', retentionRoutes);
   app.use('/api', caseRoutes);
   app.use('/api', activityRoutes);
+  app.use('/api/blockchain', blockchainRoutes);
+  app.use('/api/monitoring', monitoringRoutes);
 }
 
 module.exports = registerRoutes;

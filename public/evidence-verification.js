@@ -103,7 +103,8 @@ async function verifyFile() {
         const evidenceId = document.getElementById('evidenceId').value;
         
         // Call verification API
-        const response = await fetch('/api/evidence/verify-integrity', {
+        const apiUrl = window.config?.API_BASE_URL || '/api';
+        const response = await fetch(`${apiUrl}/evidence/verify-integrity`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -160,7 +161,8 @@ async function verifyBulkFiles() {
         try {
             const calculatedHash = await calculateFileHash(file);
             
-            const response = await fetch('/api/evidence/verify-integrity', {
+            const apiUrl = window.config?.API_BASE_URL || '/api';
+            const response = await fetch(`${apiUrl}/evidence/verify-integrity`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -275,7 +277,8 @@ function generateQRCode(url) {
 // Download verification certificate
 async function downloadCertificate() {
     try {
-        const response = await fetch('/api/evidence/verification-certificate', {
+        const apiUrl = window.config?.API_BASE_URL || '/api';
+        const response = await fetch(`${apiUrl}/evidence/verification-certificate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

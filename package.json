@@ -14,7 +14,15 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "jest --forceExit --detectOpenHandles",
-    "build": "echo 'Build not required for this project'"
+    "test:integration": "node tests/integration-test.js",
+    "build": "echo 'Build not required for this project'",
+    "compile": "npx hardhat compile",
+    "deploy:amoy": "npx hardhat run scripts/deploy-verified.js --network polygonAmoy",
+    "deploy:polygon": "npx hardhat run scripts/deploy-verified.js --network polygon",
+    "verify:contract": "npx hardhat verify --network polygonAmoy",
+    "blockchain:status": "curl http://localhost:3000/api/blockchain/status",
+    "blockchain:health": "curl http://localhost:3000/api/blockchain/health",
+    "migrate:blockchain": "node scripts/migrate-to-blockchain.js"
   },
   "keywords": [
     "blockchain",
@@ -41,14 +49,17 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
     "archiver": "^6.0.1",
+    "axios": "^1.6.0",
     "bcryptjs": "^3.0.3",
     "bull": "^4.12.2",
     "color-hash": "^2.0.2",
     "cors": "^2.8.6",
     "date-fns": "^2.30.0",
     "dotenv": "^16.4.5",
+    "ethers": "^6.10.0",
     "express": "^4.18.2",
     "express-rate-limit": "^7.5.1",
+    "form-data": "^4.0.0",
     "fuse.js": "^7.1.0",
     "helmet": "^8.1.0",
     "html2canvas": "^1.4.1",
@@ -66,12 +77,15 @@
     "vis-timeline": "^7.7.3"
   },
   "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
     "eslint": "^10.0.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
+    "hardhat": "^2.19.0",
     "jest": "^30.2.0",
     "nodemon": "^3.0.2",
     "prettier": "^3.8.1",
+    "solc": "^0.8.19",
     "supertest": "^7.2.2"
   },
   "engines": {

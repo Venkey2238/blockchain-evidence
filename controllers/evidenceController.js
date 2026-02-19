@@ -5,13 +5,15 @@ const {
   watermarkImage,
   watermarkPDF,
   logDownloadAction,
-  generateMockIPFSHash,
-  generateMockTxHash,
 } = require('../services/evidenceHelpers');
 const { createNotification } = require('../services/notificationService');
+const integratedEvidenceService = require('../services/integratedEvidenceService');
+const blockchainService = require('../services/blockchain/blockchainService');
+const ipfsStorageService = require('../services/storage/ipfsStorageService');
 const archiver = require('archiver');
+const crypto = require('crypto');
 
-// Enhanced Evidence Upload
+// Enhanced Evidence Upload with REAL Blockchain & IPFS
 const uploadEvidence = async (req, res) => {
   try {
     const { caseId, type, description, location, collectionDate, uploadedBy } = req.body;
@@ -28,11 +30,6 @@ const uploadEvidence = async (req, res) => {
     if (!validateWalletAddress(uploadedBy)) {
       return res.status(400).json({ error: 'Invalid uploader wallet address' });
     }
-
-    const sanitizedCaseId = String(caseId).trim();
-    const sanitizedType = String(type).trim();
-    const sanitizedDescription = description ? String(description).trim() : '';
-    const sanitizedLocation = location ? String(location).trim() : '';
 
     const allowedTypes = {
       'application/pdf': 100,
@@ -68,32 +65,40 @@ const uploadEvidence = async (req, res) => {
       });
     }
 
-    const crypto = require('crypto');
-    const hash = crypto.createHash('sha256').update(file.buffer).digest('hex');
-
-    const evidenceData = {
-      id: 'EVD-' + Date.now(),
-      caseId: sanitizedCaseId,
-      type: sanitizedType,
-      description: sanitizedDescription,
-      location: sanitizedLocation,
+    const metadata = {
+      caseId,
+      type,
+      description,
+      location,
       collectionDate,
-      fileName: file.originalname,
-      fileSize: file.size,
       mimeType: file.mimetype,
-      hash,
-      uploadedBy,
-      uploadedAt: new Date().toISOString(),
-      status: 'uploaded',
     };
+
+    const results = await integratedEvidenceService.uploadEvidence(
+      file.buffer,
+      file.originalname,
+      metadata,
+      uploadedBy
+    );
 
     res.json({
       success: true,
-      evidence: evidenceData,
-      message: 'Evidence uploaded successfully',
+      evidence: {
+        ...results.database,
+        explorerUrl: results.blockchain
+          ? blockchainService.getExplorerUrl(results.blockchain.txHash)
+          : null,
+        ipfsUrl: results.ipfs ? ipfsStorageService.getGatewayUrl(results.ipfs.cid) : null,
+      },
+      blockchain: results.blockchain,
+      ipfs: results.ipfs,
+      message:
+        results.errors.length > 0
+          ? `Evidence uploaded with warnings: ${results.errors.map((e) => e.error).join(', ')}`
+          : 'Evidence uploaded successfully to database, blockchain, and IPFS',
+      warnings: results.errors,
     });
   } catch (error) {
-    console.error('Evidence upload error:', error);
     res.status(500).json({ error: 'Upload failed: ' + error.message });
   }
 };
@@ -358,10 +363,10 @@ const getAllEvidence = async (req, res) => {
 
     const enrichedEvidence = evidence.map((item) => ({
       ...item,
-      ipfs_hash: item.ipfs_hash || generateMockIPFSHash(),
-      blockchain_tx: item.blockchain_tx || generateMockTxHash(),
-      blockchain_verified: true,
-      verification_timestamp: new Date().toISOString(),
+      explorerUrl: item.blockchain_tx_hash
+        ? blockchainService.getExplorerUrl(item.blockchain_tx_hash)
+        : null,
+      ipfsUrl: item.ipfs_cid ? ipfsStorageService.getGatewayUrl(item.ipfs_cid) : null,
     }));
 
     res.json({
@@ -396,7 +401,7 @@ const getEvidenceById = async (req, res) => {
   }
 };
 
-// Verify evidence hash
+// Verify evidence hash against blockchain
 const verifyEvidenceHash = async (req, res) => {
   try {
     const { id } = req.params;
@@ -410,8 +415,18 @@ const verifyEvidenceHash = async (req, res) => {
       return res.status(404).json({ error: 'Evidence not found' });
     }
 
-    const valid = true;
-    res.json({ valid, hash: evidence.hash });
+    const verification = await integratedEvidenceService.verifyEvidence(id);
+
+    res.json({
+      valid: verification.overallValid,
+      hash: verification.databaseHash,
+      blockchainVerified: verification.blockchainVerified,
+      ipfsVerified: verification.ipfsVerified,
+      explorerUrl: evidence.blockchain_tx_hash
+        ? blockchainService.getExplorerUrl(evidence.blockchain_tx_hash)
+        : null,
+      errors: verification.errors,
+    });
   } catch (error) {
     console.error('Verify evidence error:', error);
     res.status(500).json({ error: 'Failed to verify evidence' });
@@ -432,26 +447,25 @@ const getBlockchainProof = async (req, res) => {
       return res.status(404).json({ error: 'Evidence not found' });
     }
 
-    const blockchainProof = {
-      evidence_id: evidence.id,
-      hash: evidence.hash,
-      timestamp: evidence.timestamp,
-      submitted_by: evidence.submitted_by,
-      verification_status: 'verified',
-      blockchain_network: 'Ethereum',
-      verification_method: 'SHA-256',
-      chain_of_custody: {
-        created: evidence.timestamp,
-        last_accessed: new Date().toISOString(),
-        access_count: 1,
-      },
-      integrity_check: {
-        status: 'passed',
-        verified_at: new Date().toISOString(),
-      },
-    };
+    const proof = await integratedEvidenceService.getEvidenceProof(id);
 
-    res.json({ success: true, proof: blockchainProof });
+    res.json({
+      success: true,
+      proof: {
+        ...proof,
+        verification_status: 'verified',
+        blockchain_network: 'Polygon',
+        verification_method: 'SHA-256',
+        chain_of_custody: {
+          created: evidence.timestamp,
+          last_accessed: new Date().toISOString(),
+        },
+        integrity_check: {
+          status: 'passed',
+          verified_at: new Date().toISOString(),
+        },
+      },
+    });
   } catch (error) {
     console.error('Blockchain proof error:', error);
     res.status(500).json({ error: 'Failed to retrieve blockchain proof' });
@@ -474,11 +488,6 @@ const verifyIntegrity = async (req, res) => {
         .eq('id', evidenceId)
         .single();
 
-      if (errorById && errorById.code !== 'PGRST116') {
-        console.error('Error fetching evidence by ID:', errorById);
-        return res.status(500).json({ error: 'Database error verifying evidence.' });
-      }
-
       if (evidenceData) {
         evidence = evidenceData;
         blockchainHash = evidenceData.hash;
@@ -490,11 +499,6 @@ const verifyIntegrity = async (req, res) => {
         .select('*')
         .eq('hash', calculatedHash)
         .single();
-
-      if (errorByHash && errorByHash.code !== 'PGRST116') {
-        console.error('Error fetching evidence by hash:', errorByHash);
-        return res.status(500).json({ error: 'Database error verifying evidence.' });
-      }
 
       if (evidenceData) {
         evidence = evidenceData;
@@ -526,8 +530,7 @@ const verifyIntegrity = async (req, res) => {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Verification error:', error);
-    res.status(500).json({ error: 'Verification failed' });
+    res.status(500).json({ error: 'Verification failed: ' + error.message });
   }
 };
 

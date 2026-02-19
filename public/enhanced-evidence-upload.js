@@ -196,10 +196,19 @@ class EvidenceUploader {
             });
 
             xhr.addEventListener('load', () => {
-                if (xhr.status === 200) {
-                    resolve(JSON.parse(xhr.responseText));
+                if (xhr.status === 200 || xhr.status === 201) {
+                    try {
+                        resolve(JSON.parse(xhr.responseText));
+                    } catch (e) {
+                        reject(new Error('Invalid server response'));
+                    }
                 } else {
-                    reject(new Error(`Upload failed: ${xhr.statusText}`));
+                    try {
+                        const error = JSON.parse(xhr.responseText);
+                        reject(new Error(error.error || xhr.statusText));
+                    } catch (e) {
+                        reject(new Error(`Upload failed: ${xhr.statusText}`));
+                    }
                 }
             });
 
@@ -207,7 +216,8 @@ class EvidenceUploader {
                 reject(new Error('Upload failed: Network error'));
             });
 
-            xhr.open('POST', '/api/evidence/upload');
+            const apiUrl = window.config?.API_BASE_URL || '/api';
+            xhr.open('POST', `${apiUrl}/evidence/upload`);
             xhr.send(formData);
         });
     }
@@ -240,36 +250,24 @@ class EvidenceUploader {
         this.uploadStartTime = Date.now();
         this.showProgress(true);
         
-        // Update file name in progress
         const fileNameSpan = document.querySelector('.upload-details .file-name');
         if (fileNameSpan) fileNameSpan.textContent = file.name;
 
         try {
-            // Simulate different upload stages
             this.updateProgress(0, 0, file.size, 'Preparing upload...');
-            await this.delay(500);
-
-            this.updateProgress(10, 0, file.size, 'Validating file...');
             await this.delay(300);
 
-            this.updateProgress(20, 0, file.size, 'Calculating hash...');
-            await this.delay(800);
+            this.updateProgress(10, 0, file.size, 'Uploading to server...');
 
-            this.updateProgress(30, 0, file.size, 'Uploading to server...');
-
-            // Actual upload with progress
             const result = await this.uploadWithProgress(file, formData, (percentage, loaded, total) => {
-                const adjustedPercentage = 30 + (percentage * 0.6); // 30-90% for upload
-                this.updateProgress(adjustedPercentage, loaded, total, 'Uploading...');
+                const adjustedPercentage = 10 + (percentage * 0.8);
+                this.updateProgress(adjustedPercentage, loaded, total, 'Uploading to IPFS & Blockchain...');
             });
-
-            this.updateProgress(90, file.size, file.size, 'Storing to blockchain...');
-            await this.delay(1000);
 
             this.updateProgress(100, file.size, file.size, 'Upload complete!');
             await this.delay(500);
 
-            this.showSuccess('🎉 Evidence uploaded successfully and stored on blockchain!');
+            this.showSuccess(`✅ Evidence uploaded successfully!\n📦 IPFS: ${result.evidence?.ipfs_cid?.substring(0, 12)}...\n⛓️ TX: ${result.evidence?.blockchain_tx_hash?.substring(0, 12)}...`);
             return result;
 
         } catch (error) {

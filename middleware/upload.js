@@ -1,9 +1,9 @@
 const multer = require('multer');
 
-// Configure multer for file uploads
 const upload = multer({
+  storage: multer.memoryStorage(),
   limits: {
-    fileSize: 100 * 1024 * 1024, // 100MB limit
+    fileSize: 100 * 1024 * 1024,
   },
   fileFilter: (req, file, cb) => {
     const allowedTypes = [

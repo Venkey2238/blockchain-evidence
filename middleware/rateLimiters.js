@@ -39,6 +39,30 @@ const policyPageLimiter = rateLimit({
   max: rateLimits.policy.max,
 });
 
+// Blockchain operations rate limiting
+const blockchainLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  message: { error: 'Blockchain operation limit exceeded. Maximum 10 operations per minute.' },
+  standardHeaders: true,
+});
+
+// Evidence upload rate limiting
+const uploadLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 50,
+  message: { error: 'Upload limit exceeded. Maximum 50 uploads per hour.' },
+  standardHeaders: true,
+});
+
+// Verification rate limiting
+const verificationLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  message: { error: 'Verification limit exceeded. Maximum 30 verifications per minute.' },
+  standardHeaders: true,
+});
+
 module.exports = {
   authLimiter,
   limiter,
@@ -46,4 +70,7 @@ module.exports = {
   exportLimiter,
   timelineLimiter,
   policyPageLimiter,
+  blockchainLimiter,
+  uploadLimiter,
+  verificationLimiter,
 };

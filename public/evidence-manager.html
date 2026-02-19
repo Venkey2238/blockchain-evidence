@@ -201,7 +201,6 @@
                 document.getElementById('searchEvidence').addEventListener('input', filterEvidence);
 
             } catch (error) {
-                console.error('Initialization error:', error);
                 showAlert('Failed to initialize evidence manager', 'error');
             }
         }
@@ -216,7 +215,6 @@
                 const savedUser = localStorage.getItem('evidUser_' + wallet);
                 return savedUser ? JSON.parse(savedUser) : null;
             } catch (error) {
-                console.error('Error loading user data:', error);
                 return null;
             }
         }
@@ -242,7 +240,6 @@
                     document.getElementById('contractStatus').textContent = '❌ No Web3';
                 }
             } catch (error) {
-                console.error('Web3 initialization error:', error);
                 document.getElementById('contractStatus').textContent = '❌ Error';
             }
         }
@@ -258,7 +255,6 @@
                     return;
                 }
 
-                // Validate file using enhanced uploader
                 if (!evidenceUploader.validateFile(file)) {
                     return;
                 }
@@ -268,102 +264,44 @@
                 formData.append('caseId', document.getElementById('caseId').value);
                 formData.append('type', document.getElementById('evidenceType').value);
                 formData.append('description', document.getElementById('description').value);
-                formData.append('location', document.getElementById('location').value);
-                formData.append('collectionDate', document.getElementById('collectionDate').value);
+                formData.append('location', document.getElementById('location').value || '');
+                formData.append('collectionDate', document.getElementById('collectionDate').value || '');
                 formData.append('uploadedBy', currentUser.wallet_address);
 
-                // Use enhanced uploader for progress tracking
                 const result = await evidenceUploader.handleUpload(formData, file);
 
-                // Calculate file hash
-                const fileHash = await calculateFileHash(file);
+                if (result.success) {
+                    if (typeof trackEvent === 'function') {
+                        trackEvent('evidence_uploaded', {
+                            event_category: 'evidence_management',
+                            evidence_type: document.getElementById('evidenceType').value,
+                            file_size: file.size
+                        });
+                    }
 
-                // Create evidence metadata
-                const evidenceData = {
-                    id: 'EVD-' + Date.now(),
-                    caseId: document.getElementById('caseId').value,
-                    type: document.getElementById('evidenceType').value,
-                    description: document.getElementById('description').value,
-                    location: document.getElementById('location').value,
-                    collectionDate: document.getElementById('collectionDate').value,
-                    fileName: file.name,
-                    fileSize: file.size,
-                    fileHash: fileHash,
-                    uploadedBy: currentUser.wallet_address,
-                    uploadedAt: new Date().toISOString(),
-                    status: 'uploaded',
-                    blockchainTx: null
-                };
-
-                // Store to blockchain (mock implementation)
-                try {
-                    const txHash = await storeToBlockchain(fileHash, JSON.stringify(evidenceData));
-                    evidenceData.blockchainTx = txHash;
-                    evidenceData.status = 'blockchain_confirmed';
-                } catch (error) {
-                    console.error('Blockchain storage failed:', error);
-                    evidenceData.status = 'blockchain_pending';
+                    document.getElementById('evidenceForm').reset();
+                    evidenceUploader.clearFileInput();
+                    await loadEvidence();
                 }
-
-                // Store evidence data
-                await storeEvidenceData(evidenceData);
-
-                // Track analytics
-                if (typeof trackEvent === 'function') {
-                    trackEvent('evidence_uploaded', {
-                        event_category: 'evidence_management',
-                        evidence_type: evidenceData.type,
-                        file_size: evidenceData.fileSize
-                    });
-                }
-
-                document.getElementById('evidenceForm').reset();
-                evidenceUploader.clearFileInput();
-                await loadEvidence();
 
             } catch (error) {
-                console.error('Upload error:', error);
                 evidenceUploader.showError('Upload failed: ' + error.message);
             }
         }
 
-        async function calculateFileHash(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = async function (e) {
-                    const buffer = e.target.result;
-                    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-                    const hashArray = Array.from(new Uint8Array(hashBuffer));
-                    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-                    resolve(hashHex);
-                };
-                reader.readAsArrayBuffer(file);
-            });
-        }
-
-        async function storeToBlockchain(hash, metadata) {
-            // Mock blockchain transaction
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    resolve('0x' + Math.random().toString(16).substr(2, 64));
-                }, 2000);
-            });
-        }
-
-        async function storeEvidenceData(evidenceData) {
-            // Store in localStorage for now
-            const existingEvidence = JSON.parse(localStorage.getItem('evidence_' + currentUser.wallet_address) || '[]');
-            existingEvidence.push(evidenceData);
-            localStorage.setItem('evidence_' + currentUser.wallet_address, JSON.stringify(existingEvidence));
-        }
-
         async function loadEvidence() {
             try {
-                const evidence = JSON.parse(localStorage.getItem('evidence_' + currentUser.wallet_address) || '[]');
-                evidenceList = evidence;
+                const apiUrl = window.config?.API_BASE_URL || '/api';
+                const response = await fetch(`${apiUrl}/evidence`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load evidence');
+                }
+                
+                const data = await response.json();
+                evidenceList = data.evidence || [];
                 renderEvidence(evidenceList);
             } catch (error) {
-                console.error('Error loading evidence:', error);
                 document.getElementById('evidenceList').innerHTML = '<p class="text-center text-muted">Error loading evidence</p>';
             }
         }
@@ -379,22 +317,27 @@
             const evidenceHtml = evidence.map(item => `
                 <div class="evidence-card" onclick="viewEvidence('${item.id}')">
                     <div class="evidence-header">
-                        <h3>${item.fileName}</h3>
-                        <span class="badge badge-${getStatusClass(item.status)}">${item.status}</span>
+                        <h3>${item.name || 'Untitled'}</h3>
+                        <span class="badge badge-${item.blockchain_verified ? 'success' : 'warning'}">
+                            ${item.blockchain_verified ? '✅ Verified' : '⏳ Pending'}
+                        </span>
                     </div>
                     <div class="evidence-meta">
-                        <p><strong>Case:</strong> ${item.caseId}</p>
-                        <p><strong>Type:</strong> ${item.type}</p>
-                        <p><strong>Size:</strong> ${formatFileSize(item.fileSize)}</p>
-                        <p><strong>Hash:</strong> ${item.fileHash.substring(0, 16)}...</p>
+                        <p><strong>Case:</strong> ${item.case_id || 'N/A'}</p>
+                        <p><strong>Type:</strong> ${item.file_type || 'Unknown'}</p>
+                        <p><strong>Size:</strong> ${formatFileSize(item.file_size || 0)}</p>
+                        <p><strong>Hash:</strong> ${item.hash ? item.hash.substring(0, 16) + '...' : 'N/A'}</p>
+                        ${item.ipfs_cid ? `<p><strong>IPFS:</strong> ${item.ipfs_cid.substring(0, 12)}...</p>` : ''}
                     </div>
                     <div class="evidence-actions">
                         <button class="btn btn-sm btn-outline" onclick="event.stopPropagation(); verifyHash('${item.id}')">
                             🔍 Verify Hash
                         </button>
-                        <button class="btn btn-sm btn-outline" onclick="event.stopPropagation(); viewChainOfCustody('${item.id}')">
-                            ⛓️ Chain of Custody
+                        ${item.blockchain_tx_hash ? `
+                        <button class="btn btn-sm btn-outline" onclick="event.stopPropagation(); window.open('${item.explorerUrl}', '_blank')">
+                            ⛓️ View TX
                         </button>
+                        ` : ''}
                     </div>
                 </div>
             `).join('');
@@ -405,9 +348,10 @@
         function filterEvidence() {
             const searchTerm = document.getElementById('searchEvidence').value.toLowerCase();
             const filtered = evidenceList.filter(item =>
-                item.fileName.toLowerCase().includes(searchTerm) ||
-                item.caseId.toLowerCase().includes(searchTerm) ||
-                item.description.toLowerCase().includes(searchTerm)
+                (item.name && item.name.toLowerCase().includes(searchTerm)) ||
+                (item.case_id && item.case_id.toLowerCase().includes(searchTerm)) ||
+                (item.description && item.description.toLowerCase().includes(searchTerm)) ||
+                (item.hash && item.hash.toLowerCase().includes(searchTerm))
             );
             renderEvidence(filtered);
         }
@@ -428,37 +372,50 @@
                     document.getElementById('gasPrice').textContent = 'N/A';
                 }
             } catch (error) {
-                console.error('Blockchain status error:', error);
             }
         }
 
         function viewEvidence(evidenceId) {
-            const evidence = evidenceList.find(e => e.id === evidenceId);
+            const evidence = evidenceList.find(e => e.id == evidenceId);
             if (!evidence) return;
 
-            document.getElementById('evidenceModalTitle').textContent = evidence.fileName;
+            document.getElementById('evidenceModalTitle').textContent = evidence.name || 'Evidence Details';
             document.getElementById('evidenceModalContent').innerHTML = `
                 <div class="evidence-details">
                     <div class="detail-section">
                         <h3>📋 Basic Information</h3>
                         <p><strong>Evidence ID:</strong> ${evidence.id}</p>
-                        <p><strong>Case ID:</strong> ${evidence.caseId}</p>
-                        <p><strong>Type:</strong> ${evidence.type}</p>
-                        <p><strong>Description:</strong> ${evidence.description}</p>
-                        <p><strong>Collection Location:</strong> ${evidence.location || 'Not specified'}</p>
-                        <p><strong>Collection Date:</strong> ${evidence.collectionDate || 'Not specified'}</p>
+                        <p><strong>Case ID:</strong> ${evidence.case_id || 'N/A'}</p>
+                        <p><strong>File Name:</strong> ${evidence.name}</p>
+                        <p><strong>File Type:</strong> ${evidence.file_type || 'Unknown'}</p>
+                        <p><strong>Description:</strong> ${evidence.description || 'No description'}</p>
+                        <p><strong>Location:</strong> ${evidence.location || 'Not specified'}</p>
+                        <p><strong>Collection Date:</strong> ${evidence.collection_date ? new Date(evidence.collection_date).toLocaleString() : 'Not specified'}</p>
                     </div>
                     <div class="detail-section">
                         <h3>🔐 Cryptographic Hash</h3>
-                        <p><strong>SHA-256:</strong> <code>${evidence.fileHash}</code></p>
-                        <p><strong>File Size:</strong> ${formatFileSize(evidence.fileSize)}</p>
-                        <p><strong>Blockchain TX:</strong> ${evidence.blockchainTx || 'Pending'}</p>
+                        <p><strong>SHA-256:</strong> <code>${evidence.hash}</code></p>
+                        <p><strong>File Size:</strong> ${formatFileSize(evidence.file_size || 0)}</p>
+                        ${evidence.ipfs_cid ? `<p><strong>IPFS CID:</strong> <code>${evidence.ipfs_cid}</code></p>` : ''}
+                        ${evidence.ipfsUrl ? `<p><a href="${evidence.ipfsUrl}" target="_blank" class="btn btn-sm btn-outline">📦 View on IPFS</a></p>` : ''}
+                    </div>
+                    <div class="detail-section">
+                        <h3>⛓️ Blockchain Verification</h3>
+                        <p><strong>Status:</strong> <span class="badge badge-${evidence.blockchain_verified ? 'success' : 'warning'}">
+                            ${evidence.blockchain_verified ? '✅ Verified on Blockchain' : '⏳ Pending'}
+                        </span></p>
+                        ${evidence.blockchain_tx_hash ? `
+                            <p><strong>Transaction Hash:</strong> <code>${evidence.blockchain_tx_hash}</code></p>
+                            <p><strong>Block Number:</strong> ${evidence.blockchain_block_number || 'N/A'}</p>
+                            <p><strong>Gas Used:</strong> ${evidence.gas_used || 'N/A'}</p>
+                            <p><a href="${evidence.explorerUrl}" target="_blank" class="btn btn-sm btn-primary">🔗 View on Block Explorer</a></p>
+                        ` : ''}
+                        <p><strong>Blockchain Timestamp:</strong> ${evidence.blockchain_timestamp ? new Date(evidence.blockchain_timestamp).toLocaleString() : 'N/A'}</p>
                     </div>
                     <div class="detail-section">
                         <h3>👤 Chain of Custody</h3>
-                        <p><strong>Uploaded By:</strong> ${evidence.uploadedBy}</p>
-                        <p><strong>Upload Date:</strong> ${new Date(evidence.uploadedAt).toLocaleString()}</p>
-                        <p><strong>Status:</strong> <span class="badge badge-${getStatusClass(evidence.status)}">${evidence.status}</span></p>
+                        <p><strong>Submitted By:</strong> ${evidence.submitted_by || 'Unknown'}</p>
+                        <p><strong>Upload Date:</strong> ${evidence.timestamp ? new Date(evidence.timestamp).toLocaleString() : 'N/A'}</p>
                     </div>
                 </div>
             `;
@@ -500,17 +457,6 @@
                 5: 'court', 6: 'manager', 7: 'auditor', 8: 'admin'
             };
             return classes[role] || 'public';
-        }
-
-        function getStatusClass(status) {
-            const classes = {
-                'uploaded': 'warning',
-                'blockchain_confirmed': 'success',
-                'blockchain_pending': 'info',
-                'verified': 'success',
-                'sealed': 'dark'
-            };
-            return classes[status] || 'secondary';
         }
 
         function formatFileSize(bytes) {
