@@ -52,6 +52,9 @@
 > - •	Evidence admission/exclusion tracking
 > - •	Court official dashboard
 > - •	Hearing schedule integration
+> - 7. fil all issue in this roles and make sure this are workgin perfectly
+> -  Investigator
+> - Forensic Analyst
 
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
