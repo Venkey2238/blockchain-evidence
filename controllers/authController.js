@@ -1,5 +1,6 @@
 const { supabase, allowedRoles } = require('../config');
 const { validateWalletAddress } = require('../middleware/verifyAdmin');
+const crypto = require('crypto');
 
 // Wallet login
 const walletLogin = async (req, res) => {
@@ -28,7 +29,7 @@ const walletLogin = async (req, res) => {
 
     // Log login activity
     await supabase.from('activity_logs').insert({
-      user_id: user.wallet_address,
+      user_id: user.id,
       action: 'wallet_login',
       details: JSON.stringify({ auth_type: 'wallet' }),
       timestamp: new Date().toISOString(),
@@ -86,7 +87,7 @@ const emailLogin = async (req, res) => {
 
     // Log login activity
     await supabase.from('activity_logs').insert({
-      user_id: user.email,
+      user_id: user.id,
       action: 'email_login',
       details: JSON.stringify({ auth_type: 'email' }),
       timestamp: new Date().toISOString(),
@@ -157,6 +158,10 @@ const emailRegister = async (req, res) => {
       throw hashError;
     }
 
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const tokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours
+
     // Create user
     const { data: newUser, error } = await supabase
       .from('users')
@@ -171,7 +176,9 @@ const emailRegister = async (req, res) => {
         account_type: 'real',
         created_by: 'self_registration',
         is_active: true,
-        email_verified: true,
+        email_verified: false,
+        verification_token: verificationToken,
+        verification_token_expires: tokenExpires,
       })
       .select()
       .single();
@@ -182,10 +189,13 @@ const emailRegister = async (req, res) => {
     }
 
     console.log('User created successfully:', newUser.id);
+    console.log(
+      `[SIMULATED EMAIL] Verification link: /api/auth/email/verify?token=${verificationToken}`,
+    );
 
     // Log registration activity
     await supabase.from('activity_logs').insert({
-      user_id: newUser.email,
+      user_id: newUser.id,
       action: 'email_registration',
       details: JSON.stringify({
         role: role,
@@ -281,7 +291,7 @@ const walletRegister = async (req, res) => {
 
     // Log registration activity
     await supabase.from('activity_logs').insert({
-      user_id: newUser.wallet_address,
+      user_id: newUser.id,
       action: 'wallet_registration',
       details: JSON.stringify({
         role: role,
@@ -311,9 +321,57 @@ const walletRegister = async (req, res) => {
   }
 };
 
+// Verify Email
+const verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).json({ error: 'Verification token is required' });
+    }
+
+    // Get user by token
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('verification_token', token)
+      .single();
+
+    if (error || !user) {
+      return res.status(400).json({ error: 'Invalid or expired verification token' });
+    }
+
+    // Check expiry
+    if (new Date(user.verification_token_expires) < new Date()) {
+      return res.status(400).json({ error: 'Verification token has expired' });
+    }
+
+    // Update user
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({
+        email_verified: true,
+        verification_token: null,
+        verification_token_expires: null,
+      })
+      .eq('id', user.id);
+
+    if (updateError) {
+      console.error('Verify email error:', updateError);
+      return res.status(500).json({ error: 'Failed to verify email' });
+    }
+
+    res.json({ success: true, message: 'Email verified successfully' });
+  } catch (error) {
+    console.error('Email verification error:', error);
+    res.status(500).json({ error: 'Verification failed' });
+  }
+};
+
 module.exports = {
   emailLogin,
   emailRegister,
   walletLogin,
   walletRegister,
+  verifyEmail,
 };

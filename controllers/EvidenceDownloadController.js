@@ -1,6 +1,11 @@
 const { supabase } = require('../config');
 const { validateWalletAddress } = require('../middleware/verifyAdmin');
-const { generateWatermarkText, logDownloadAction } = require('../services/evidenceHelpers');
+const {
+  generateWatermarkText,
+  logDownloadAction,
+  watermarkImage,
+  watermarkPDF,
+} = require('../services/evidenceHelpers');
 const blockchainService = require('../services/blockchain/blockchainService');
 const ipfsStorageService = require('../services/storage/ipfsStorageService');
 const archiver = require('archiver');
@@ -42,22 +47,14 @@ const downloadEvidence = async (req, res) => {
 
     const watermarkText = generateWatermarkText(userWallet, evidence.case_number, new Date());
 
-    let fileBuffer;
-    let contentType;
-    let filename;
+    let fileBuffer = await ipfsStorageService.getFile(evidence.ipfs_hash || evidence.storage_ref);
+    let contentType = evidence.file_type || 'application/octet-stream';
+    let filename = evidence.name ? `watermarked_${evidence.name}` : `evidence_${id}_watermarked`;
 
     if (evidence.file_type?.startsWith('image/')) {
-      fileBuffer = Buffer.from('Mock image data for evidence ' + id);
-      contentType = evidence.file_type;
-      filename = `evidence_${id}_watermarked.jpg`;
+      fileBuffer = await watermarkImage(fileBuffer, watermarkText);
     } else if (evidence.file_type === 'application/pdf') {
-      fileBuffer = Buffer.from('Mock PDF data for evidence ' + id);
-      contentType = 'application/pdf';
-      filename = `evidence_${id}_watermarked.pdf`;
-    } else {
-      fileBuffer = Buffer.from('Mock file data for evidence ' + id);
-      contentType = 'application/octet-stream';
-      filename = `evidence_${id}_watermarked.bin`;
+      fileBuffer = await watermarkPDF(fileBuffer, watermarkText);
     }
 
     await logDownloadAction(userWallet, id, 'evidence_download', {
@@ -122,6 +119,15 @@ const bulkExport = async (req, res) => {
     }
 
     const archive = archiver('zip', { zlib: { level: 9 } });
+
+    archive.on('error', (err) => {
+      console.error('Archive error during stream:', err);
+    });
+
+    res.on('error', (err) => {
+      console.error('Response stream error:', err);
+    });
+
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const zipFilename = `evidence_export_${timestamp}.zip`;
 
@@ -155,32 +161,38 @@ const bulkExport = async (req, res) => {
 
     for (const evidence of evidenceItems) {
       const watermarkText = generateWatermarkText(userWallet, evidence.case_number, new Date());
-      let fileBuffer = Buffer.from(`Mock evidence data for ${evidence.name} (ID: ${evidence.id})`);
-      let filename = `${evidence.id}_${evidence.name || 'evidence'}`;
+      let fileBuffer = await ipfsStorageService.getFile(evidence.ipfs_hash || evidence.storage_ref);
+      let filename = `${evidence.id}_watermarked_${evidence.name || 'evidence'}`;
 
       if (evidence.file_type?.startsWith('image/')) {
-        filename += '_watermarked.jpg';
+        fileBuffer = await watermarkImage(fileBuffer, watermarkText);
       } else if (evidence.file_type === 'application/pdf') {
-        filename += '_watermarked.pdf';
-      } else {
-        filename += '_watermarked.bin';
+        fileBuffer = await watermarkPDF(fileBuffer, watermarkText);
       }
 
       archive.append(fileBuffer, { name: filename });
     }
 
-    await logDownloadAction(userWallet, null, 'evidence_bulk_export', {
-      evidence_ids: evidenceIds,
-      total_files: evidenceItems.length,
-      export_format: 'zip',
-      watermark_applied: true,
-      export_timestamp: new Date().toISOString(),
-    });
+    try {
+      await logDownloadAction(userWallet, null, 'evidence_bulk_export', {
+        evidence_ids: evidenceIds,
+        total_files: evidenceItems.length,
+        export_format: 'zip',
+        watermark_applied: true,
+        export_timestamp: new Date().toISOString(),
+      });
+    } catch (logErr) {
+      console.error('Failed to log bulk export download action:', logErr);
+    }
 
     archive.finalize();
   } catch (error) {
-    console.error('Bulk export error:', error);
-    res.status(500).json({ error: 'Failed to export evidence' });
+    if (res.headersSent) {
+      console.error('Bulk export error while streaming:', error);
+    } else {
+      console.error('Bulk export error:', error);
+      res.status(500).json({ error: 'Failed to export evidence' });
+    }
   }
 };
 
@@ -251,7 +263,7 @@ const getAllEvidence = async (req, res) => {
 
     let query = supabase
       .from('evidence')
-      .select('*')
+      .select('*', { count: 'exact' })
       .order('timestamp', { ascending: false })
       .range(offsetNum, offsetNum + limitNum - 1);
 
@@ -259,7 +271,7 @@ const getAllEvidence = async (req, res) => {
     if (status) query = query.eq('status', status);
     if (submitted_by) query = query.eq('submitted_by', submitted_by);
 
-    const { data: evidence, error } = await query;
+    const { data: evidence, error, count } = await query;
 
     if (error) throw error;
 
@@ -274,7 +286,7 @@ const getAllEvidence = async (req, res) => {
     res.json({
       success: true,
       evidence: enrichedEvidence,
-      total: evidence.length,
+      total: count || 0,
     });
   } catch (error) {
     console.error('Get evidence error:', error);

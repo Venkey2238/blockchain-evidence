@@ -69,7 +69,12 @@ const exportTimelinePdf = async (req, res) => {
 // Get evidence with expiry information
 const getEvidenceExpiry = async (req, res) => {
   try {
-    const { filter = 'all' } = req.query;
+    const { filter = 'all', wallet } = req.query;
+
+    if (!validateWalletAddress(wallet)) {
+      return res.status(403).json({ error: 'Unauthorized access: Invalid wallet address' });
+    }
+
     let query = supabase.from('evidence').select('*');
 
     const now = new Date();
@@ -115,6 +120,16 @@ const setLegalHold = async (req, res) => {
       return res.status(400).json({ error: 'Invalid wallet address' });
     }
 
+    const { data: evidence, error: fetchError } = await supabase
+      .from('evidence')
+      .select('id')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !evidence) {
+      return res.status(404).json({ error: 'Evidence not found' });
+    }
+
     const { error } = await supabase
       .from('evidence')
       .update({ legal_hold: legalHold })
@@ -143,6 +158,10 @@ const bulkRetentionPolicy = async (req, res) => {
 
     if (!validateWalletAddress(userWallet)) {
       return res.status(400).json({ error: 'Invalid wallet address' });
+    }
+
+    if (!evidenceIds || !Array.isArray(evidenceIds) || evidenceIds.length === 0) {
+      return res.status(400).json({ error: 'Invalid or empty evidenceIds' });
     }
 
     const { data: policy, error: policyError } = await supabase
@@ -178,6 +197,12 @@ const bulkRetentionPolicy = async (req, res) => {
 // Check for expiring evidence and send notifications
 const checkExpiry = async (req, res) => {
   try {
+    const { wallet } = req.query;
+
+    if (!validateWalletAddress(wallet)) {
+      return res.status(403).json({ error: 'Unauthorized access: Invalid wallet address' });
+    }
+
     const now = new Date();
     const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
@@ -190,17 +215,24 @@ const checkExpiry = async (req, res) => {
       .gte('expiry_date', now.toISOString())
       .eq('legal_hold', false);
 
-    if (expiring30) {
-      for (const evidence of expiring30) {
-        await createNotification(
+    if (error30) {
+      console.error('Database error checking expiry:', error30);
+      return res.status(500).json({ error: 'Failed to fetch expiring evidence' });
+    }
+
+    if (expiring30 && expiring30.length > 0) {
+      const notificationPromises = expiring30.map((evidence) =>
+        createNotification(
           evidence.submitted_by,
           'Evidence Expiry Warning',
           `Evidence "${evidence.title}" will expire in 30 days`,
           'system',
           { evidence_id: evidence.id, expiry_date: evidence.expiry_date },
-        );
-        notificationsSent++;
-      }
+        ),
+      );
+
+      const results = await Promise.allSettled(notificationPromises);
+      notificationsSent = results.filter((r) => r.status === 'fulfilled').length;
     }
 
     res.json({ success: true, notifications_sent: notificationsSent });

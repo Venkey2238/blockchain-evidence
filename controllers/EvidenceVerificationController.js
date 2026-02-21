@@ -55,16 +55,17 @@ const getBlockchainProof = async (req, res) => {
       success: true,
       proof: {
         ...proof,
-        verification_status: 'verified',
-        blockchain_network: 'Polygon',
-        verification_method: 'SHA-256',
+        verification_status: proof.verificationStatus || proof.status || proof.result || 'unknown',
+        blockchain_network: proof.blockchain_network || proof.network || 'Polygon',
+        verification_method: proof.verification_method || proof.method || 'SHA-256',
         chain_of_custody: {
           created: evidence.timestamp,
           last_accessed: new Date().toISOString(),
+          ...proof.chain_of_custody,
         },
         integrity_check: {
-          status: 'passed',
-          verified_at: new Date().toISOString(),
+          status: proof.integrity?.status || proof.integrity || 'unknown',
+          verified_at: proof.verificationTimestamp || proof.verified_at || new Date().toISOString(),
         },
       },
     });
@@ -79,7 +80,14 @@ const verifyIntegrity = async (req, res) => {
   try {
     const { fileName, fileSize, calculatedHash, evidenceId } = req.body;
 
+    if (!calculatedHash || typeof calculatedHash !== 'string' || calculatedHash.trim() === '') {
+      return res
+        .status(400)
+        .json({ error: 'calculatedHash is required and must be a non-empty string' });
+    }
+
     let evidence = null;
+    let safeEvidence = null;
     let verified = false;
     let blockchainHash = null;
 
@@ -89,6 +97,10 @@ const verifyIntegrity = async (req, res) => {
         .select('*')
         .eq('id', evidenceId)
         .single();
+
+      if (errorById && errorById.code !== 'PGRST116') {
+        return res.status(500).json({ error: 'Database error retrieving evidence by ID' });
+      }
 
       if (evidenceData) {
         evidence = evidenceData;
@@ -102,11 +114,25 @@ const verifyIntegrity = async (req, res) => {
         .eq('hash', calculatedHash)
         .single();
 
+      if (errorByHash && errorByHash.code !== 'PGRST116') {
+        return res.status(500).json({ error: 'Database error retrieving evidence by hash' });
+      }
+
       if (evidenceData) {
         evidence = evidenceData;
         blockchainHash = evidenceData.hash;
         verified = true;
       }
+    }
+
+    if (evidence) {
+      safeEvidence = {
+        id: evidence.id,
+        hash: evidence.hash,
+        timestamp: evidence.timestamp,
+        case_id: evidence.case_id,
+        name: evidence.name,
+      };
     }
 
     await supabase.from('activity_logs').insert({
@@ -127,7 +153,7 @@ const verifyIntegrity = async (req, res) => {
       verified,
       calculatedHash,
       blockchainHash,
-      evidence,
+      evidence: safeEvidence,
       verificationUrl: `${req.protocol}://${req.get('host')}/verify/${calculatedHash}`,
       timestamp: new Date().toISOString(),
     });
@@ -141,6 +167,10 @@ const generateVerificationCertificate = async (req, res) => {
   try {
     const { fileName, verificationResult, timestamp } = req.body;
 
+    if (!verificationResult || typeof verificationResult !== 'string') {
+      return res.status(400).json({ error: 'verificationResult is required and must be a string' });
+    }
+
     const certificateData = {
       fileName,
       verificationResult,
@@ -149,7 +179,7 @@ const generateVerificationCertificate = async (req, res) => {
       issuer: 'EVID-DGC Blockchain Evidence System',
     };
 
-    const pdfContent = `
+    const textContent = `
 EVIDENCE VERIFICATION CERTIFICATE
 
 Certificate ID: ${certificateData.certificateId}
@@ -161,12 +191,12 @@ Issued By: ${certificateData.issuer}
 This certificate confirms the integrity verification of the above evidence file.
         `;
 
-    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.setHeader(
       'Content-Disposition',
-      `attachment; filename="verification_certificate_${fileName}_${Date.now()}.pdf"`,
+      `attachment; filename="verification_certificate_${fileName}_${Date.now()}.txt"`,
     );
-    res.send(Buffer.from(pdfContent));
+    res.send(Buffer.from(textContent));
   } catch (error) {
     console.error('Certificate generation error:', error);
     res.status(500).json({ error: 'Failed to generate certificate' });

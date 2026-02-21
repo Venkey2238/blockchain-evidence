@@ -17,6 +17,7 @@ const verifyAdmin = async (req, res, next) => {
     // Enforce admin check in production: only allow wallets that are registered as active admins
     const { data: admin, error } = await supabase
       .from('users')
+      .select('id, wallet_address, full_name, role, is_active, department, jurisdiction, email')
       .eq('wallet_address', adminWallet)
       .eq('role', 'admin')
       .eq('is_active', true)

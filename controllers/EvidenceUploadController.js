@@ -1,3 +1,4 @@
+const { supabase } = require('../config');
 const { validateWalletAddress } = require('../middleware/verifyAdmin');
 const integratedEvidenceService = require('../services/integratedEvidenceService');
 const blockchainService = require('../services/blockchain/blockchainService');
@@ -19,6 +20,21 @@ const uploadEvidence = async (req, res) => {
 
     if (!validateWalletAddress(uploadedBy)) {
       return res.status(400).json({ error: 'Invalid uploader wallet address' });
+    }
+
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('wallet_address', uploadedBy.toLowerCase())
+      .eq('is_active', true)
+      .single();
+
+    if (userError || !user) {
+      return res.status(403).json({ error: 'Unauthorized access' });
+    }
+
+    if (user.role === 'public_viewer') {
+      return res.status(403).json({ error: 'Public viewers cannot upload evidence' });
     }
 
     const allowedTypes = {
@@ -71,6 +87,8 @@ const uploadEvidence = async (req, res) => {
       uploadedBy,
     );
 
+    const errors = results?.errors || [];
+
     res.json({
       success: true,
       evidence: {
@@ -83,13 +101,14 @@ const uploadEvidence = async (req, res) => {
       blockchain: results.blockchain,
       ipfs: results.ipfs,
       message:
-        results.errors.length > 0
-          ? `Evidence uploaded with warnings: ${results.errors.map((e) => e.error).join(', ')}`
+        errors.length > 0
+          ? `Evidence uploaded with warnings: ${errors.map((e) => e.error).join(', ')}`
           : 'Evidence uploaded successfully to database, blockchain, and IPFS',
-      warnings: results.errors,
+      warnings: errors,
     });
   } catch (error) {
-    res.status(500).json({ error: 'Upload failed: ' + error.message });
+    console.error('Evidence upload failed:', error);
+    res.status(500).json({ error: 'Upload failed.' });
   }
 };
 
