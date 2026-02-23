@@ -64,7 +64,12 @@ const getBlockchainProof = async (req, res) => {
           ...proof.chain_of_custody,
         },
         integrity_check: {
-          status: proof.integrity?.status || proof.integrity || 'unknown',
+          status:
+            typeof proof.integrity?.status === 'string' && proof.integrity.status
+              ? proof.integrity.status
+              : typeof proof.integrity === 'string'
+                ? proof.integrity
+                : 'unknown',
           verified_at: proof.verificationTimestamp || proof.verified_at || new Date().toISOString(),
         },
       },
@@ -135,18 +140,23 @@ const verifyIntegrity = async (req, res) => {
       };
     }
 
-    await supabase.from('activity_logs').insert({
-      user_id: 'public_verification',
-      action: 'evidence_verification',
-      details: JSON.stringify({
-        fileName,
-        fileSize,
-        calculatedHash: calculatedHash.substring(0, 16) + '...',
-        verified,
-        evidenceId,
-      }),
-      timestamp: new Date().toISOString(),
-    });
+    // Audit log isolated so failure doesn't turn a successful verification into a 500
+    try {
+      await supabase.from('activity_logs').insert({
+        user_id: 'public_verification',
+        action: 'evidence_verification',
+        details: JSON.stringify({
+          fileName,
+          fileSize,
+          calculatedHash: calculatedHash.substring(0, 16) + '...',
+          verified,
+          evidenceId,
+        }),
+        timestamp: new Date().toISOString(),
+      });
+    } catch (logError) {
+      console.error('Failed to log verification activity:', logError);
+    }
 
     res.json({
       success: true,
@@ -172,10 +182,12 @@ const generateVerificationCertificate = async (req, res) => {
       return res.status(400).json({ error: 'verificationResult is required and must be a string' });
     }
 
+    const validTimestamp = isFinite(Date.parse(timestamp)) ? new Date(timestamp) : new Date();
+
     const certificateData = {
       fileName,
       verificationResult,
-      timestamp,
+      timestamp: validTimestamp.toISOString(),
       certificateId: `CERT-${Date.now()}`,
       issuer: 'EVID-DGC Blockchain Evidence System',
     };
@@ -192,7 +204,7 @@ EVIDENCE VERIFICATION CERTIFICATE
 Certificate ID: ${certificateData.certificateId}
 File Name: ${sanitizedFileName}
 Verification Result: ${verificationResult.toUpperCase()}
-Verification Date: ${new Date(timestamp).toLocaleString()}
+Verification Date: ${validTimestamp.toLocaleString()}
 Issued By: ${certificateData.issuer}
 
 This certificate confirms the integrity verification of the above evidence file.
@@ -266,12 +278,16 @@ const getVerificationHistory = async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized: Admin or Auditor role required' });
     }
 
+    const parsedLimit = Number(limit);
+    const sanitizedLimit =
+      Number.isInteger(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 1000) : 100;
+
     const { data: history, error } = await supabase
       .from('activity_logs')
       .select('*')
       .eq('action', 'evidence_verification')
       .order('timestamp', { ascending: false })
-      .limit(parseInt(limit));
+      .limit(sanitizedLimit);
 
     if (error) throw error;
 
@@ -291,9 +307,19 @@ const compareEvidence = async (req, res) => {
       return res.status(400).json({ error: 'Evidence IDs are required' });
     }
 
-    const evidenceIds = ids.split(',').map((id) => parseInt(id.trim()));
+    const evidenceIds = ids
+      .split(',')
+      .map((id) => id.trim())
+      .map((id) => Number(id))
+      .filter((id) => Number.isInteger(id) && id > 0);
 
-    if (evidenceIds.length < 2 || evidenceIds.length > 4) {
+    if (evidenceIds.length < 2) {
+      return res
+        .status(400)
+        .json({ error: 'Please provide at least 2 valid numeric evidence IDs' });
+    }
+
+    if (evidenceIds.length > 4) {
       return res.status(400).json({ error: 'Please provide 2-4 evidence IDs' });
     }
 
@@ -310,8 +336,8 @@ const compareEvidence = async (req, res) => {
 
     const enrichedEvidence = evidenceItems.map((item) => ({
       ...item,
-      blockchain_verified: true,
-      verification_timestamp: new Date().toISOString(),
+      blockchain_verified: !!item.blockchain_tx_hash,
+      verification_timestamp: item.blockchain_tx_hash ? new Date().toISOString() : null,
     }));
 
     res.json({
@@ -357,6 +383,18 @@ const createComparisonReport = async (req, res) => {
       report_type: 'evidence_comparison',
     };
 
+    // Persist the report to the database
+    const { data: insertedReport, error: insertError } = await supabase
+      .from('comparison_reports')
+      .insert(reportRecord)
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error('Failed to persist comparison report:', insertError);
+      return res.status(500).json({ error: 'Failed to save comparison report' });
+    }
+
     await supabase.from('activity_logs').insert({
       user_id: generatedBy,
       action: 'evidence_comparison_report_generated',
@@ -367,7 +405,7 @@ const createComparisonReport = async (req, res) => {
     res.json({
       success: true,
       message: 'Comparison report generated successfully',
-      report: reportRecord,
+      report: insertedReport,
     });
   } catch (error) {
     console.error('Comparison report error:', error);

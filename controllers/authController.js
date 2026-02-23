@@ -85,6 +85,11 @@ const emailLogin = async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
+    // Block unverified email accounts
+    if (user.email_verified === false) {
+      return res.status(401).json({ error: 'Please verify your email before logging in' });
+    }
+
     // Log login activity
     await supabase.from('activity_logs').insert({
       user_id: user.id,
@@ -189,7 +194,6 @@ const emailRegister = async (req, res) => {
     }
 
     console.log('User created successfully:', newUser.id);
-    console.log('[EMAIL] Verification email queued for new user');
 
     // Log registration activity
     await supabase.from('activity_logs').insert({
@@ -209,7 +213,7 @@ const emailRegister = async (req, res) => {
       email_verification_required: true,
       email_verified: false,
       instructions:
-        'A verification link has been sent to your email. Please click the link to activate your account.',
+        'A verification link has been generated. Email delivery is not yet configured; contact an administrator to activate your account.',
       user: {
         id: newUser.id,
         email: newUser.email,
@@ -237,6 +241,11 @@ const walletRegister = async (req, res) => {
       jurisdiction,
       walletSuffix: walletAddress?.slice(-6),
     });
+
+    if (!walletAddress) {
+      return res.status(400).json({ error: 'Wallet address is required' });
+    }
+
     if (!validateWalletAddress(walletAddress)) {
       return res.status(400).json({ error: 'Invalid wallet address' });
     }
@@ -361,6 +370,18 @@ const verifyEmail = async (req, res) => {
     if (updateError) {
       console.error('Verify email error:', updateError);
       return res.status(500).json({ error: 'Failed to verify email' });
+    }
+
+    // Audit log for email verification (isolated so failure doesn't mask success)
+    try {
+      await supabase.from('activity_logs').insert({
+        user_id: user.id,
+        action: 'email_verified',
+        details: JSON.stringify({ email: user.email }),
+        timestamp: new Date().toISOString(),
+      });
+    } catch (logError) {
+      console.error('Failed to log email verification:', logError);
     }
 
     res.json({ success: true, message: 'Email verified successfully' });

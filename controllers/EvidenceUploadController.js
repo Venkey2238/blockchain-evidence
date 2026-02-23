@@ -24,7 +24,7 @@ const uploadEvidence = async (req, res) => {
 
     const { data: user, error: userError } = await supabase
       .from('users')
-      .select('*')
+      .select('id, role')
       .eq('wallet_address', uploadedBy.toLowerCase())
       .eq('is_active', true)
       .single();
@@ -93,17 +93,21 @@ const uploadEvidence = async (req, res) => {
 
     const errors = results?.errors || [];
 
+    if (!results) {
+      return res.status(500).json({ success: false, error: 'Upload service returned no results' });
+    }
+
     res.json({
       success: true,
       evidence: {
-        ...results.database,
-        explorerUrl: results.blockchain
+        ...results?.database,
+        explorerUrl: results?.blockchain?.txHash
           ? blockchainService.getExplorerUrl(results.blockchain.txHash)
           : null,
-        ipfsUrl: results.ipfs ? ipfsStorageService.getGatewayUrl(results.ipfs.cid) : null,
+        ipfsUrl: results?.ipfs?.cid ? ipfsStorageService.getGatewayUrl(results.ipfs.cid) : null,
       },
-      blockchain: results.blockchain,
-      ipfs: results.ipfs,
+      blockchain: results?.blockchain || null,
+      ipfs: results?.ipfs || null,
       message:
         errors.length > 0
           ? `Evidence uploaded with warnings: ${errors.map((e) => e.error).join(', ')}`

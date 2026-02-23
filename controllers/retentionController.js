@@ -120,6 +120,27 @@ const setLegalHold = async (req, res) => {
       return res.status(400).json({ error: 'Invalid wallet address' });
     }
 
+    // Verify user exists, is active, and has an authorized role
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('id, role, is_active')
+      .eq('wallet_address', userWallet.toLowerCase())
+      .single();
+
+    if (userError || !user) {
+      return res.status(403).json({ error: 'User not found' });
+    }
+
+    if (!user.is_active) {
+      return res.status(403).json({ error: 'User account is inactive' });
+    }
+
+    if (!['admin', 'investigator', 'evidence_manager'].includes(user.role)) {
+      return res
+        .status(403)
+        .json({ error: 'Unauthorized: Insufficient role for legal hold operations' });
+    }
+
     const { data: evidence, error: fetchError } = await supabase
       .from('evidence')
       .select('id')
@@ -184,12 +205,15 @@ const bulkRetentionPolicy = async (req, res) => {
 
     const { error, count } = await supabase
       .from('evidence')
-      .update({
-        retention_policy_id: policyId,
-        expiry_date: expiryDate.toISOString(),
-      })
+      .update(
+        {
+          retention_policy_id: policyId,
+          expiry_date: expiryDate.toISOString(),
+        },
+        { count: 'exact' },
+      )
       .in('id', evidenceIds)
-      .select('*', { count: 'exact' });
+      .select();
 
     if (error) throw error;
 
