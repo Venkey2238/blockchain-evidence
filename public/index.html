@@ -139,14 +139,8 @@
                     <i data-lucide="log-in"></i>
                     <span>Login</span>
                 </button>
-                <button id="navDashboardBtn" class="nav-login-btn nav-btn-compact hidden" onclick="goToDashboard()">
-                    <i data-lucide="layout-dashboard"></i>
-                    <span>Dashboard</span>
-                </button>
-                <button id="navLogoutBtn" class="nav-login-btn nav-btn-compact btn-outline hidden" onclick="logout()"
-                    style="border: 1px solid var(--primary-red); color: var(--primary-red); background: transparent;">
-                    <i data-lucide="log-out"></i>
-                    <span>Logout</span>
+                <i data-lucide="log-out"></i>
+                <span>Logout</span>
                 </button>
             </nav>
         </div>
@@ -689,7 +683,8 @@
                         </div>
                         <h3>GitHub</h3>
                         <p>Source code and issues</p>
-                        <a href="https://github.com/Gooichand/blockchain-evidence" target="_blank" rel="noopener noreferrer">View Repository</a>
+                        <a href="https://github.com/Gooichand/blockchain-evidence" target="_blank"
+                            rel="noopener noreferrer">View Repository</a>
                     </div>
                     <div class="contact-item">
                         <div class="contact-icon">
@@ -709,7 +704,7 @@
         <div class="modal-content" data-lenis-prevent>
             <div class="modal-header">
                 <h3>Email Login</h3>
-                <button class="modal-close" onclick="closeEmailLogin()"aria-label="Close email login modal">
+                <button class="modal-close" onclick="closeEmailLogin()" aria-label="Close email login modal">
                     <i data-lucide="x"></i>
                 </button>
             </div>
@@ -894,64 +889,16 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-container">
-            <div class="footer-section">
-                <div class="footer-brand">
-                    <img src="logo-32x32.png" alt="Logo" class="footer-logo">
-                </div>
-                <p>Secure blockchain evidence management for law enforcement and legal professionals.</p>
-            </div>
-            <div class="footer-section">
-                <h3>Quick Links</h3>
-                <ul>
-                    <li><a href="#how-it-works">How It Works</a></li>
-                    <li><a href="#documentation">Documentation</a></li>
-                    <li><a href="#faq">FAQ</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h3>Legal</h3>
-                <ul>
-                    <li><a href="privacy.html">Privacy Policy</a></li>
-
-                    <li><a href="terms.html">Terms of Service</a></li>
-                    <li><a href="security.html">Security Policy</a></li>
-
-                    <li><a href="terms_of_service.html">Terms of Service</a></li>
-                    <li><a href="security_policy.html">Security Policy</a></li>
-
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h3>Resources</h3>
-                <ul>
-                    <li><a href="https://github.com/Gooichand/blockchain-evidence" target="_blank" rel="noopener noreferrer">GitHub</a></li>
-                    <li><a href="api-reference.html">API Documentation</a></li>
-                    <li><a href="#">Support</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; <span id="currentYear">2025</span> Blockchain Evidence Management. All rights reserved.</p>
-        </div>
-    </footer>
-
     <!-- Scroll to Top Button -->
     <button id="scrollUpBtn" class="scroll-up-btn" onclick="scrollToTop()" aria-label="Scroll to top">
         <i data-lucide="arrow-up"></i>
     </button>
 
+    <script src="header.js"></script>
+    <script src="footer.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             console.log('DOM loaded, initializing application...');
-
-            const yearElement = document.getElementById('currentYear');
-            if (yearElement) {
-                yearElement.textContent = new Date().getFullYear();
-            }
 
             try {
                 if (typeof config === 'undefined') {
