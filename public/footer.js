@@ -81,8 +81,22 @@ class FooterManager {
         document.body.insertAdjacentHTML('beforeend', footerHTML);
 
         // Initialize Lucide icons if available
+        this.updateIcons();
+    }
+
+    updateIcons() {
         if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
+            try {
+                lucide.createIcons();
+            } catch (err) {
+                console.warn('Footer Lucide icon creation failed:', err);
+            }
+        } else {
+            // Log once but don't overwhelm
+            if (!window.lucideWarned) {
+                console.warn('Lucide icons not loaded for footer');
+                window.lucideWarned = true;
+            }
         }
     }
 }

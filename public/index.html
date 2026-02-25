@@ -23,6 +23,7 @@
     <script src="https://unpkg.com/lenis@1.3.17/dist/lenis.min.js" integrity="sha384-..."
         crossorigin="anonymous"></script>
     <script src="app.js"></script>
+    <script src="header.js"></script>
     <script src="forgot-password.js"></script>
 </head>
 
@@ -101,56 +102,24 @@
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <!-- Navigation Header -->
-    <header class="header-nav">
-        <div class="navbar-container">
-            <div class="nav-brand">
-                <img src="logo-32x32.png" alt="EVID-DGC Logo" class="brand-logo">
+    <div id="header-placeholder"
+        style="height: 64px; background: #f5f5f5; display: flex; align-items: center; padding: 0 24px;">
+        <div style="width: 32px; height: 32px; background: #e0e0e0; border-radius: 4px; margin-right: 12px;"></div>
+        <div style="width: 120px; height: 24px; background: #e0e0e0; border-radius: 4px;"></div>
+    </div>
+    <noscript>
+        <nav class="header-nav" style="display: block !important;">
+            <div class="navbar-container">
+                <a href="index.html" class="nav-brand">EVID-DGC</a>
+                <div class="nav-menu">
+                    <a href="#home">Home</a>
+                    <a href="#how-it-works">How It Works</a>
+                    <a href="#documentation">Docs</a>
+                    <a href="#login-options">Login</a>
+                </div>
             </div>
-            <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation menu">
-                <i data-lucide="menu" class="hamburger-icon"></i>
-            </button>
-            <nav class="nav-menu" id="navMenu">
-                <a href="#home" class="nav-link" onclick="scrollToTop()">
-                    <i data-lucide="home"></i>
-                    <span>Home</span>
-                </a>
-                <a href="#how-it-works" class="nav-link" onclick="scrollToSection('how-it-works')">
-                    <i data-lucide="workflow"></i>
-                    <span>How It Works</span>
-                </a>
-                <a href="#documentation" class="nav-link" onclick="scrollToSection('documentation')">
-                    <i data-lucide="book-open"></i>
-                    <span>Documentation</span>
-                </a>
-                <a href="#faq" class="nav-link" onclick="scrollToSection('faq')">
-                    <i data-lucide="help-circle"></i>
-                    <span>Q&A</span>
-                </a>
-                <a href="#contact" class="nav-link" onclick="scrollToSection('contact')">
-                    <i data-lucide="phone"></i>
-                    <span>Contact</span>
-                </a>
-                <a href="https://github.com/Gooichand/blockchain-evidence" target="_blank"
-                    class="nav-link external-link" rel="noopener noreferrer">
-                    <i data-lucide="github"></i>
-                    <span>GitHub</span>
-                </a>
-                <button id="navLoginBtn" class="nav-login-btn" onclick="scrollToSection('login-options')">
-                    <i data-lucide="log-in"></i>
-                    <span>Login</span>
-                </button>
-                <button id="navDashboardBtn" class="nav-login-btn nav-btn-compact hidden" onclick="goToDashboard()">
-                    <i data-lucide="layout-dashboard"></i>
-                    <span>Dashboard</span>
-                </button>
-                <button id="navLogoutBtn" class="nav-login-btn nav-btn-compact btn-outline hidden" onclick="logout()"
-                    style="border: 1px solid var(--primary-red); color: var(--primary-red); background: transparent;">
-                    <i data-lucide="log-out"></i>
-                    <span>Logout</span>
-                </button>
-            </nav>
-        </div>
-    </header>
+        </nav>
+    </noscript>
 
     <!-- Animated Background -->
     <div class="particles" id="particles"></div>
@@ -689,7 +658,8 @@
                         </div>
                         <h3>GitHub</h3>
                         <p>Source code and issues</p>
-                        <a href="https://github.com/Gooichand/blockchain-evidence" target="_blank" rel="noopener noreferrer">View Repository</a>
+                        <a href="https://github.com/Gooichand/blockchain-evidence" target="_blank"
+                            rel="noopener noreferrer">View Repository</a>
                     </div>
                     <div class="contact-item">
                         <div class="contact-icon">
@@ -709,7 +679,7 @@
         <div class="modal-content" data-lenis-prevent>
             <div class="modal-header">
                 <h3>Email Login</h3>
-                <button class="modal-close" onclick="closeEmailLogin()"aria-label="Close email login modal">
+                <button class="modal-close" onclick="closeEmailLogin()" aria-label="Close email login modal">
                     <i data-lucide="x"></i>
                 </button>
             </div>
@@ -894,64 +864,16 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-container">
-            <div class="footer-section">
-                <div class="footer-brand">
-                    <img src="logo-32x32.png" alt="Logo" class="footer-logo">
-                </div>
-                <p>Secure blockchain evidence management for law enforcement and legal professionals.</p>
-            </div>
-            <div class="footer-section">
-                <h3>Quick Links</h3>
-                <ul>
-                    <li><a href="#how-it-works">How It Works</a></li>
-                    <li><a href="#documentation">Documentation</a></li>
-                    <li><a href="#faq">FAQ</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h3>Legal</h3>
-                <ul>
-                    <li><a href="privacy.html">Privacy Policy</a></li>
-
-                    <li><a href="terms.html">Terms of Service</a></li>
-                    <li><a href="security.html">Security Policy</a></li>
-
-                    <li><a href="terms_of_service.html">Terms of Service</a></li>
-                    <li><a href="security_policy.html">Security Policy</a></li>
-
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h3>Resources</h3>
-                <ul>
-                    <li><a href="https://github.com/Gooichand/blockchain-evidence" target="_blank" rel="noopener noreferrer">GitHub</a></li>
-                    <li><a href="api-reference.html">API Documentation</a></li>
-                    <li><a href="#">Support</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; <span id="currentYear">2025</span> Blockchain Evidence Management. All rights reserved.</p>
-        </div>
-    </footer>
-
     <!-- Scroll to Top Button -->
     <button id="scrollUpBtn" class="scroll-up-btn" onclick="scrollToTop()" aria-label="Scroll to top">
         <i data-lucide="arrow-up"></i>
     </button>
 
+    <script src="header.js"></script>
+    <script src="footer.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             console.log('DOM loaded, initializing application...');
-
-            const yearElement = document.getElementById('currentYear');
-            if (yearElement) {
-                yearElement.textContent = new Date().getFullYear();
-            }
 
             try {
                 if (typeof config === 'undefined') {
