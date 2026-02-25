@@ -312,27 +312,27 @@ function setupModalClickOutside(modalId, closeFunction) {
 
 // Toggle password visibility
 function togglePasswordVisibility(inputId) {
-    const input = document.getElementById(inputId);
-    if (!input) return;
+  const input = document.getElementById(inputId);
+  if (!input) return;
 
-    const wrapper = input.closest('.password-input-wrapper');
-    if(!wrapper)
-      return;
-    const toggleBtn = wrapper.querySelector('.password-toggle-btn');
-    if(!toggle)
-      return ;
-    const icon = toggleBtn.querySelector('svg');
+  const wrapper = input.closest('.password-input-wrapper');
+  if (!wrapper)
+    return;
+  const toggleBtn = wrapper.querySelector('.password-toggle-btn');
+  if (!toggle)
+    return;
+  const icon = toggleBtn.querySelector('svg');
 
-    const isPassword = input.type === "password";
-    input.type = isPassword ? "text" : "password";
+  const isPassword = input.type === "password";
+  input.type = isPassword ? "text" : "password";
 
-    if (icon) {
-        icon.setAttribute(
-            "data-lucide",
-            isPassword ? "eye-off" : "eye"
-        );
-        lucide.createIcons();
-    }
+  if (icon) {
+    icon.setAttribute(
+      "data-lucide",
+      isPassword ? "eye-off" : "eye"
+    );
+    lucide.createIcons();
+  }
 }
 
 // Wallet connection
@@ -717,8 +717,10 @@ function initializeSections() {
   }
 }
 
-// Initialize navigation
+// Initialize navigation (Redundant: now handled by HeaderManager in header.js)
 function initializeNavigation() {
+  console.log("Navigation handlers handled by HeaderManager");
+  /*
   const menuToggle = document.getElementById("menuToggle");
   const navMenu = document.getElementById("navMenu");
 
@@ -746,13 +748,10 @@ function initializeNavigation() {
             icon.setAttribute("data-lucide", "menu");
         lucide.createIcons();
         }
-        
-      
-        
-        
       }
     });
   }
+  */
 }
 
 // Initialize scroll up button

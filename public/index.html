@@ -23,6 +23,7 @@
     <script src="https://unpkg.com/lenis@1.3.17/dist/lenis.min.js" integrity="sha384-..."
         crossorigin="anonymous"></script>
     <script src="app.js"></script>
+    <script src="header.js"></script>
     <script src="forgot-password.js"></script>
 </head>
 
@@ -101,50 +102,24 @@
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <!-- Navigation Header -->
-    <header class="header-nav">
-        <div class="navbar-container">
-            <div class="nav-brand">
-                <img src="logo-32x32.png" alt="EVID-DGC Logo" class="brand-logo">
+    <div id="header-placeholder"
+        style="height: 64px; background: #f5f5f5; display: flex; align-items: center; padding: 0 24px;">
+        <div style="width: 32px; height: 32px; background: #e0e0e0; border-radius: 4px; margin-right: 12px;"></div>
+        <div style="width: 120px; height: 24px; background: #e0e0e0; border-radius: 4px;"></div>
+    </div>
+    <noscript>
+        <nav class="header-nav" style="display: block !important;">
+            <div class="navbar-container">
+                <a href="index.html" class="nav-brand">EVID-DGC</a>
+                <div class="nav-menu">
+                    <a href="#home">Home</a>
+                    <a href="#how-it-works">How It Works</a>
+                    <a href="#documentation">Docs</a>
+                    <a href="#login-options">Login</a>
+                </div>
             </div>
-            <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation menu">
-                <i data-lucide="menu" class="hamburger-icon"></i>
-            </button>
-            <nav class="nav-menu" id="navMenu">
-                <a href="#home" class="nav-link" onclick="scrollToTop()">
-                    <i data-lucide="home"></i>
-                    <span>Home</span>
-                </a>
-                <a href="#how-it-works" class="nav-link" onclick="scrollToSection('how-it-works')">
-                    <i data-lucide="workflow"></i>
-                    <span>How It Works</span>
-                </a>
-                <a href="#documentation" class="nav-link" onclick="scrollToSection('documentation')">
-                    <i data-lucide="book-open"></i>
-                    <span>Documentation</span>
-                </a>
-                <a href="#faq" class="nav-link" onclick="scrollToSection('faq')">
-                    <i data-lucide="help-circle"></i>
-                    <span>Q&A</span>
-                </a>
-                <a href="#contact" class="nav-link" onclick="scrollToSection('contact')">
-                    <i data-lucide="phone"></i>
-                    <span>Contact</span>
-                </a>
-                <a href="https://github.com/Gooichand/blockchain-evidence" target="_blank"
-                    class="nav-link external-link" rel="noopener noreferrer">
-                    <i data-lucide="github"></i>
-                    <span>GitHub</span>
-                </a>
-                <button id="navLoginBtn" class="nav-login-btn" onclick="scrollToSection('login-options')">
-                    <i data-lucide="log-in"></i>
-                    <span>Login</span>
-                </button>
-                <i data-lucide="log-out"></i>
-                <span>Logout</span>
-                </button>
-            </nav>
-        </div>
-    </header>
+        </nav>
+    </noscript>
 
     <!-- Animated Background -->
     <div class="particles" id="particles"></div>

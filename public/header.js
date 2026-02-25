@@ -76,14 +76,34 @@ class HeaderManager {
                 </nav>
             </div>
         </header>
+        <noscript>
+            <div style="padding: 1rem; text-align: center; background: #fff3f3; color: #d32f2f; font-weight: bold;">
+                JavaScript is required for the full experience. <a href="index.html">View Site Map</a>
+            </div>
+        </noscript>
         `;
 
-        // Insert at the beginning of body
-        document.body.insertAdjacentHTML('afterbegin', headerHTML);
+        // Insert or replace placeholder
+        const placeholder = document.getElementById('header-placeholder');
+        if (placeholder) {
+            placeholder.outerHTML = headerHTML;
+        } else {
+            document.body.insertAdjacentHTML('afterbegin', headerHTML);
+        }
 
         // Initialize Lucide icons if available
+        this.updateIcons();
+    }
+
+    updateIcons() {
         if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
+            try {
+                lucide.createIcons();
+            } catch (err) {
+                console.warn('Lucide icon creation failed:', err);
+            }
+        } else {
+            console.warn('Lucide icons not loaded');
         }
     }
 
@@ -92,6 +112,12 @@ class HeaderManager {
         const navMenu = document.getElementById('navMenu');
 
         if (toggleBtn && navMenu) {
+            // ✅ Idempotency guard to prevent duplicate listeners
+            if (toggleBtn.dataset.menuListenersAttached === 'true') {
+                return;
+            }
+            toggleBtn.dataset.menuListenersAttached = 'true';
+
             toggleBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 navMenu.classList.toggle('active');
@@ -101,9 +127,7 @@ class HeaderManager {
                 if (icon) {
                     const isOpening = navMenu.classList.contains('active');
                     icon.setAttribute('data-lucide', isOpening ? 'x' : 'menu');
-                    if (typeof lucide !== 'undefined') {
-                        lucide.createIcons();
-                    }
+                    this.updateIcons();
                 }
             });
 
@@ -114,9 +138,7 @@ class HeaderManager {
                     const icon = toggleBtn.querySelector('i');
                     if (icon) {
                         icon.setAttribute('data-lucide', 'menu');
-                        if (typeof lucide !== 'undefined') {
-                            lucide.createIcons();
-                        }
+                        this.updateIcons();
                     }
                 }
             });
@@ -128,9 +150,7 @@ class HeaderManager {
                     const icon = toggleBtn.querySelector('i');
                     if (icon) {
                         icon.setAttribute('data-lucide', 'menu');
-                        if (typeof lucide !== 'undefined') {
-                            lucide.createIcons();
-                        }
+                        this.updateIcons();
                     }
                 });
             });
